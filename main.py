@@ -112,7 +112,22 @@ def show_convert_submenu(chat_id: int) -> None:
     button_pdf_to_img = telebot.types.InlineKeyboardButton(text='PDF to Img', callback_data='pdf_to_img')
     button_mp4_to_audio = telebot.types.InlineKeyboardButton(text='MP4 to Audio', callback_data='mp4_to_audio')
     markup.add(button_bug_vless, button_text_to_img, button_img_to_text, button_img_to_pdf, button_pdf_to_img, button_mp4_to_audio)
-    bot.send_message(chat_id, "Please choose a conversion option:", reply_markup=markup)
+    bot.send_message(chat_id, f"Please choose an option for {version_type}:", reply_markup=markup)
+
+def show_broadcast_submenu(chat_id: int) -> None:
+    """Show sub-menu options under 'Broadcast'."""
+    markup = telebot.types.InlineKeyboardMarkup()        
+    button_broadcast_user = InlineKeyboardButton(text='Broadcast User', callback_data='broadcast_user')
+    button_broadcast_group = InlineKeyboardButton(text='Broadcast Group', callback_data='broadcast_group')       
+    button_broadcast_channel = InlineKeyboardButton(text='Broadcast Channel', callback_data='broadcast_channel')
+    button_broadcast_all = InlineKeyboardButton(text='Broadcast All', callback_data='broadcast_all')
+    button_schedule_user = InlineKeyboardButton(text='Schedule User', callback_data='schedule_user')
+    button_schedule_group = InlineKeyboardButton(text='Schedule Group', callback_data='schedule_group')
+    button_schedule_channel = InlineKeyboardButton(text='Schedule Channel', callback_data='schedule_channel')
+    button_schedule_all = InlineKeyboardButton(text='Schedule All', callback_data='schedule_all')
+    markup.add(button_broadcast_user, button_broadcast_group, button_broadcast_channel, button_broadcast_all, button_schedule_user, button_schedule_group,
+    button_schedule_channel, button_schedule_all)
+    bot.send_message(chat_id, f"Please choose an option for {version_type}:", reply_markup=markup)
 
 def handle_chatgpt_query(user_query: str) -> str:
     """Send a query to OpenAI's ChatGPT API and return the response."""
