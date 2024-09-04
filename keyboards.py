@@ -25,6 +25,14 @@ def get_submenu_keyboard(option: str) -> InlineKeyboardMarkup:
         button_downloader = InlineKeyboardButton(text='Downloader', callback_data=f'{option}_downloader')
         button_chatgpt = InlineKeyboardButton(text='ChatGPT', callback_data=f'{option}_chatgpt')
         markup.add(button_convert, button_broadcast, button_auto_approve, button_downloader, button_chatgpt)
+    elif option == 'convert':
+        button_bug_vless = InlineKeyboardButton(text='Bug Vless', callback_data='bug_vless')
+        button_text_to_img = InlineKeyboardButton(text='Text to Img', callback_data='text_to_img')
+        button_img_to_text = InlineKeyboardButton(text='Img to Text', callback_data='img_to_text')
+        button_img_to_pdf = InlineKeyboardButton(text='Img to PDF', callback_data='img_to_pdf')
+        button_pdf_to_img = InlineKeyboardButton(text='PDF to Img', callback_data='pdf_to_img')
+        button_mp4_to_audio = InlineKeyboardButton(text='MP4 to Audio', callback_data='mp4_to_audio')
+        markup.add(button_bug_vless, button_text_to_img, button_img_to_text, button_img_to_pdf, button_pdf_to_img, button_mp4_to_audio)
     elif option == 'downloader':
         button_fb = InlineKeyboardButton(text='FB', callback_data='downloader_fb')
         button_ig = InlineKeyboardButton(text='IG', callback_data='downloader_ig')
@@ -58,4 +66,5 @@ SUBMENU_OPTIONS = {
     'premium_version': get_submenu_keyboard('premium_version'),
     'downloader': get_submenu_keyboard('downloader'),
     'broadcast': get_submenu_keyboard('broadcast'),
+    'convert': get_submenu_keyboard('convert'),
 }
