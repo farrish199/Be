@@ -15,6 +15,9 @@ TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 # Admin user ID
 ADMIN_USER_ID = int(os.getenv('ADMIN_USER_ID', '123456789'))  # Replace with your actual admin user ID
 
+# Admin bot ID
+ADMIN_BOT_ID = int(os.getenv('ADMIN_BOT_ID', '987654321'))  # Replace with your actual admin bot ID
+
 # List of allowed user IDs
 ALLOWED_USER_IDS = list(map(int, os.getenv('ALLOWED_USER_IDS', '123456789,987654321').split(',')))  # Replace with allowed user IDs
 
@@ -34,6 +37,10 @@ def validate_config():
 
     if not ADMIN_USER_ID:
         logger.error("Admin user ID not found. Please set the ADMIN_USER_ID environment variable.")
+        exit(1)
+
+    if not ADMIN_BOT_ID:
+        logger.error("Admin bot ID not found. Please set the ADMIN_BOT_ID environment variable.")
         exit(1)
 
     if not ALLOWED_USER_IDS:
