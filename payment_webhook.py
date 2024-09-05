@@ -4,7 +4,7 @@ import hmac
 import hashlib
 import logging
 import json
-from config import PAID_USER_IDS, TOYYIBPAY_SECRET_KEY
+from config import TOYYIBPAY_SECRET_KEY
 
 app = Flask(__name__)
 logger = logging.getLogger(__name__)
