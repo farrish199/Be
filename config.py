@@ -13,10 +13,10 @@ logger = logging.getLogger(__name__)
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
 # Admin user ID
-ADMIN_USER_ID = int(os.getenv('ADMIN_USER_ID', '123456789'))  # Replace with your actual admin user ID
+ADMIN_USER_ID = int(os.getenv('ADMIN_USER_ID', '5597816302'))  # Replace with your actual admin user ID
 
 # Admin bot ID
-ADMIN_BOT_ID = int(os.getenv('ADMIN_BOT_ID', '987654321'))  # Replace with your actual admin bot ID
+ADMIN_BOT_ID = int(os.getenv('ADMIN_BOT_ID', '1358956715'))  # Replace with your actual admin bot ID
 
 # List of allowed user IDs
 ALLOWED_USER_IDS = list(map(int, os.getenv('ALLOWED_USER_IDS', '123456789,987654321').split(',')))  # Replace with allowed user IDs
