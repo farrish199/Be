@@ -3,7 +3,7 @@ import json
 import requests
 from typing import Dict, Optional
 import telebot
-from config import PAID_USER_IDS, TOYYIBPAY_API_KEY, TOYYIBPAY_MERCHANT_CODE, TOYYIBPAY_SECRET_KEY
+from config import PAID_USER_IDS, TOYYIBPAY_SECRET_KEY
 
 # Define type aliases for better readability
 UserData = Dict[str, Optional[int]]
