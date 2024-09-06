@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timedelta
 import requests
 from config import ADMIN_USER_ID, ALLOWED_USER_IDS, PAID_USER_IDS, TOYYIBPAY_SECRET_KEY
-from clone_bot import get_user_data
+from clonebot import get_user_data
 from keyboards import get_main_keyboard, get_submenu_keyboard, get_conversion_keyboard, SUBMENU_OPTIONS
 
 logger = logging.getLogger(__name__)
