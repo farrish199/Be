@@ -3,9 +3,11 @@ import re
 import telebot
 import json
 import os
+import random
+import string
 from datetime import datetime, timedelta
 import requests
-from config import ADMIN_USER_ID, ALLOWED_USER_IDS, PAID_USER_IDS, TOYYIBPAY_SECRET_KEY
+from config import ADMIN_USER_ID, ALLOWED_USER_IDS, TOYYIBPAY_SECRET_KEY
 from clonebot import get_user_data
 from keyboards import get_main_keyboard, get_submenu_keyboard, get_conversion_keyboard, SUBMENU_OPTIONS
 
@@ -35,7 +37,7 @@ def save_user_data(user_data: dict) -> None:
         json.dump(user_data, file, indent=4)
 
 def extract_info_from_text(user_text: str) -> tuple:
-    """Extract UUID, subdo, and name from a full vless URL."""
+    """Extract UUID, subdomain, and name from a full vless URL."""
     pattern = r"vless://([^@]+)@([^:]+):(\d+)\?path=/vlessws&encryption=none&type=ws#(.+)"
     match = re.match(pattern, user_text)
     if match:
@@ -244,7 +246,6 @@ def payment_callback(request: requests.Request) -> None:
     except Exception as e:
         logger.error(f"Payment callback handling failed: {e}")
 
-# Function to handle different message commands
 def handle_message(message: telebot.types.Message, bot: telebot.TeleBot) -> None:
     """Handle incoming text messages."""
     user_id = message.from_user.id
