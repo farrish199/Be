@@ -159,8 +159,6 @@ def process_payment(message: telebot.types.Message, bot: telebot.TeleBot) -> Non
     user_id = message.from_user.id
     payment_url = "https://toyyibpay.com/index.php/api/create_invoice"
     payload = {
-        "api_key": TOYYIBPAY_API_KEY,
-        "merchant_code": TOYYIBPAY_MERCHANT_CODE,
         "secret_key": TOYYIBPAY_SECRET_KEY,
         "invoice_no": f"INV-{user_id}",
         "amount": 5.00,  # Amount to be paid
