@@ -82,17 +82,6 @@ def button(call: telebot.types.CallbackQuery, bot: telebot.TeleBot) -> None:
     bot.answer_callback_query(call.id)
     bot.edit_message_text(f"Selected option: {call.data}", chat_id=call.message.chat.id, message_id=call.message.message_id)
 
-def handle_message(message: telebot.types.Message, bot: telebot.TeleBot) -> None:
-    """Handle incoming text messages."""
-    user_id = message.from_user.id
-    if is_user_allowed(user_id):
-        if message.text.startswith("vless://"):
-            handle_conversion(message, bot)
-        else:
-            bot.reply_to(message, "Invalid message. Please send a valid vless URL or use the bot's commands.")
-    else:
-        bot.reply_to(message, "You do not have permission to use this bot.")
-
 def set_admin_id(message: telebot.types.Message, bot: telebot.TeleBot) -> None:
     """Set a new admin ID."""
     user_id = message.from_user.id
@@ -154,56 +143,124 @@ def clone_bot(message: telebot.types.Message, bot: telebot.TeleBot) -> None:
     # Implement cloning logic here
     bot.reply_to(message, f"Bot cloned successfully with token: {bot_token}")
 
-def process_payment(message: telebot.types.Message, bot: telebot.TeleBot) -> None:
-    """Create a payment invoice and send the payment link to the user."""
-    user_id = message.from_user.id
-    payment_url = "https://toyyibpay.com/index.php/api/create_invoice"
+def generate_random_string(length=8) -> str:
+    """Generate a random string of fixed length."""
+    letters = string.ascii_letters + string.digits
+    return ''.join(random.choice(letters) for i in range(length))
+
+def create_category() -> str:
+    """Create a category in ToyyibPay and return the category code."""
+    category_name = f"Telegram Payment for {generate_random_string()}"
+    category_description = "Payment for bot services"
+    
     payload = {
-        "secret_key": TOYYIBPAY_SECRET_KEY,
-        "invoice_no": f"INV-{user_id}",
-        "amount": 5.00,  # Amount to be paid
-        "description": "Access to Bot for 30 days",
-        "return_url": "https://yourdomain.com/payment_return"  # Update with your actual return URL
+        'catname': category_name,
+        'catdescription': category_description,
+        'userSecretKey': TOYYIBPAY_SECRET_KEY
     }
     
     try:
-        response = requests.post(payment_url, json=payload)
+        response = requests.post('https://toyyibpay.com/index.php/api/createCategory', data=payload)
         response.raise_for_status()
         data = response.json()
-
-        if data.get('status') == 'success':
-            payment_link = data.get('payment_url')
-            bot.reply_to(message, f"Please complete your payment by visiting: {payment_link}")
-        else:
-            bot.reply_to(message, "Failed to create payment link. Please try again later.")
+        return data[0]['CategoryCode']
     except requests.RequestException as e:
-        logger.error(f"Payment request failed: {e}")
-        bot.reply_to(message, "An error occurred while processing the payment. Please try again later.")
+        logger.error(f"Category creation failed: {e}")
+        return None
 
-def payment_return(message: telebot.types.Message, bot: telebot.TeleBot) -> None:
-    """Handle payment return and update user status."""
+def create_bill(category_code: str, user_id: int, price_code: int, item_name: str) -> str:
+    """Create a bill in ToyyibPay and return the payment URL."""
+    bill_amount = price_code
+    bill_name = generate_random_string(10)
+    bill_description = f"Bill for {user_id}"
+    order_id = f"{user_id}_{bill_name}_{item_name}"
+    
+    payload = {
+        'userSecretKey': TOYYIBPAY_SECRET_KEY,
+        'categoryCode': category_code,
+        'billName': bill_name,
+        'billDescription': bill_description,
+        'billPriceSetting': 1,
+        'billPayorInfo': 1,
+        'billAmount': bill_amount,
+        'billReturnUrl': 'https://yourdomain.com/payment_return',
+        'billCallbackUrl': 'https://yourdomain.com/payment_callback',
+        'billExternalReferenceNo': order_id,
+        'billTo': '',
+        'billEmail': '',  # Add user email if needed
+        'billPhone': '',  # Add user phone number if needed
+        'billSplitPayment': 0,
+        'billPaymentChannel': '0',
+        'billContentEmail': 'Thank you for purchasing!',
+        'billChargeToCustomer': 1,
+        'billExpiryDays': 1
+    }
+    
     try:
-        data = message.text.split()
-        if len(data) < 2:
-            bot.reply_to(message, "Invalid payment data.")
-            return
+        response = requests.post('https://toyyibpay.com/index.php/api/createBill', data=payload)
+        response.raise_for_status()
+        data = response.json()
+        bill_code = data[0]['BillCode']
+        return f"https://toyyibpay.com/{bill_code}"
+    except requests.RequestException as e:
+        logger.error(f"Bill creation failed: {e}")
+        return None
+
+def process_payment(message: telebot.types.Message, bot: telebot.TeleBot) -> None:
+    """Create a payment invoice and send the payment link to the user."""
+    user_id = message.from_user.id
+    
+    category_code = create_category()
+    if not category_code:
+        bot.reply_to(message, "Failed to create payment category. Please try again later.")
+        return
+    
+    price_code = 500  # Example: RM5
+    item_name = "premium_access"
+    
+    payment_url = create_bill(category_code, user_id, price_code, item_name)
+    if payment_url:
+        bot.reply_to(message, f"Please complete your payment by visiting: {payment_url}")
+    else:
+        bot.reply_to(message, "Failed to create payment link. Please try again later.")
+
+def payment_callback(request: requests.Request) -> None:
+    """Handle payment callback and update user status."""
+    try:
+        data = request.json()
+        bill_code = data.get('billcode')
+        status = data.get('status')
+        user_id = int(data.get('order_id').split('_')[0])
         
-        user_id = int(data[0])
-        status = data[1]
-        
-        if status == "success":
+        if status == '1':  # Success
             user_data = load_user_data()
             subscription_end = datetime.now() + timedelta(days=30)
             user_data[user_id] = {"subscription_end": subscription_end.isoformat()}
             save_user_data(user_data)
-            bot.reply_to(message, "Payment successful! You now have access to premium features.")
+            # Notify user
+            bot.send_message(user_id, "Payment successful! You now have access to premium features.")
         else:
-            bot.reply_to(message, "Payment failed. Please try again.")
-    except ValueError:
-        bot.reply_to(message, "Invalid payment data format.")
+            bot.send_message(user_id, "Payment failed. Please try again.")
     except Exception as e:
-        logger.error(f"Payment return handling failed: {e}")
-        bot.reply_to(message, "An error occurred while processing the payment return.")
+        logger.error(f"Payment callback handling failed: {e}")
+
+# Function to handle different message commands
+def handle_message(message: telebot.types.Message, bot: telebot.TeleBot) -> None:
+    """Handle incoming text messages."""
+    user_id = message.from_user.id
+    if is_user_allowed(user_id):
+        if message.text.startswith("vless://"):
+            handle_conversion(message, bot)
+        elif message.text.startswith("/setprice"):
+            # Implement the /setprice command here
+            pass
+        elif message.text.startswith("/toyyibapikey"):
+            # Handle adding the ToyyibPay API key to the database
+            pass
+        else:
+            bot.reply_to(message, "Invalid message. Please send a valid vless URL or use the bot's commands.")
+    else:
+        bot.reply_to(message, "You do not have permission to use this bot.")
 
 def update_config(key: str, value: str) -> None:
     """Update configuration values."""
