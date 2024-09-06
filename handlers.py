@@ -5,7 +5,7 @@ import json
 import os
 from datetime import datetime, timedelta
 import requests
-from config import ADMIN_USER_ID, ALLOWED_USER_IDS, PAID_USER_IDS, TOYYIBPAY_API_KEY, TOYYIBPAY_MERCHANT_CODE, TOYYIBPAY_SECRET_KEY
+from config import ADMIN_USER_ID, ALLOWED_USER_IDS, PAID_USER_IDS, TOYYIBPAY_SECRET_KEY
 from clone_bot import get_user_data
 from keyboards import get_main_keyboard, get_submenu_keyboard, SUBMENU_OPTIONS
 
