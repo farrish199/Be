@@ -25,8 +25,6 @@ ALLOWED_USER_IDS = list(map(int, os.getenv('ALLOWED_USER_IDS', '123456789,987654
 PAID_USER_IDS = set(map(int, os.getenv('PAID_USER_IDS', '').split(',')))  # Replace with IDs of users who have paid
 
 # ToyyibPay API configuration
-TOYYIBPAY_API_KEY = os.getenv('TOYYIBPAY_API_KEY')
-TOYYIBPAY_MERCHANT_CODE = os.getenv('TOYYIBPAY_MERCHANT_CODE')
 TOYYIBPAY_SECRET_KEY = os.getenv('TOYYIBPAY_SECRET_KEY')
 
 # Validate required configurations
@@ -50,8 +48,8 @@ def validate_config():
     if not PAID_USER_IDS:
         logger.warning("No paid user IDs found. Please set the PAID_USER_IDS environment variable if applicable.")
 
-    if not all([TOYYIBPAY_API_KEY, TOYYIBPAY_MERCHANT_CODE, TOYYIBPAY_SECRET_KEY]):
-        logger.error("ToyyibPay configuration missing. Please set the TOYYIBPAY_API_KEY, TOYYIBPAY_MERCHANT_CODE, and TOYYIBPAY_SECRET_KEY environment variables.")
+    if not TOYYIBPAY_SECRET_KEY:
+        logger.error("ToyyibPay configuration missing. Please set the TOYYIBPAY_SECRET_KEY environment variables.")
         exit(1)
 
 # Validate configurations on import
