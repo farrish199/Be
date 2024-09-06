@@ -20,7 +20,7 @@ from handlers import (
     generate_random_string, create_category, create_bill, update_config, get_user_bot_limits
 )
 from keyboards import get_main_keyboard, get_submenu_keyboard, get_conversion_keyboard, SUBMENU_OPTIONS
-from clonebot import get_user_bot_limits, get_user_data, clone_bot, fetch_additional_data
+from clonebot import get_user_data, clone_bot, fetch_additional_data
 
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
