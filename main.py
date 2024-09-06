@@ -69,9 +69,30 @@ def handle_new_chat_member(message: telebot.types.Message) -> None:
     if group_id and message.chat.id == group_id:
         bot.approve_chat_join_request(message.chat.id, message.from_user.id)
 
+def save_user_data(user_id: int) -> None:
+    """Simpan user_id ke dalam user_data.json."""
+    file_path = 'user_data.json'
+    
+    # Muatkan data sedia ada
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+    else:
+        data = {}
+
+    # Tambah atau kemas kini user_id dalam data
+    data[str(user_id)] = {"user_id": user_id}
+
+    # Simpan data ke dalam fail
+    with open(file_path, 'w') as f:
+        json.dump(data, f, indent=4)
+
 @bot.message_handler(commands=['start'])
 def handle_start(message: telebot.types.Message) -> None:
     """Handle the /start command and show the main menu."""
+    user_id = message.from_user.id
+    save_user_data(user_id)  # Simpan user_id ke dalam user_data.json
+    
     markup = InlineKeyboardMarkup()
     buttons = [
         InlineKeyboardButton(text='Service', callback_data='service'),
