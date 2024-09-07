@@ -24,6 +24,7 @@ from handlers import (
     is_user_allowed, is_user_paid, save_user_data, handle_conversion, generate_random_string, create_category, create_bill, update_config
 )
 from keyboards import get_main_keyboard, get_submenu_keyboard, get_conversion_keyboard
+from config import TOKEN as TELEGRAM_BOT_TOKEN, ADMIN_BOT_ID
 
 # Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
