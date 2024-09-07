@@ -2,7 +2,7 @@ import logging
 import os
 import json
 import telebot
-import openai
+from chatgpt import openai
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from admintf import (
      bot as admin_bot, load_cloned_bots, is_admin_bot, save_json_file, schedule_broadcast_all, list_scheduled_jobs, cancel_scheduled_job, set_join_group_or_channel, get_join_requirements, 
@@ -33,13 +33,6 @@ TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 if not TOKEN:
     logger.error("Telegram bot token is not set in environment variables.")
     exit(1)
-
-# Set up OpenAI API key
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-if not OPENAI_API_KEY:
-    logger.error("OpenAI API key is not set in environment variables.")
-    exit(1)
-openai.api_key = OPENAI_API_KEY
 
 # Create the bot instance
 bot = telebot.TeleBot(TOKEN)
@@ -171,19 +164,38 @@ def show_broadcast_submenu(chat_id: int) -> None:
     markup.add(*buttons)
     bot.send_message(chat_id, "Please choose an option for Broadcast:", reply_markup=markup)
 
-def handle_chatgpt_query(user_query: str) -> str:
-    """Send a query to OpenAI's ChatGPT API and return the response."""
+def show_chatgpt_info(chat_id: int) -> None:
+    """Send information about how to use ChatGPT."""
+    info_message = (
+        "To interact with ChatGPT, please use the /ask command followed by your question. "
+        "For example:\n\n"
+        "/ask What is the capital of France?\n\n"
+        "The bot will then send your question to ChatGPT and return the response."
+    )
+    bot.send_message(chat_id, info_message)
+
+@bot.message_handler(commands=['ask'])
+def handle_ask_command(message: telebot.types.Message) -> None:
+    """Handle /ask command to interact with ChatGPT or extract information."""
     try:
-        response = openai.Completion.create(
-            model="text-davinci-003",
-            prompt=user_query,
-            max_tokens=150,
-            temperature=0.7
-        )
-        return response.choices[0].text.strip()
+        user_input = message.text[len('/ask'):].strip()
+
+        if user_input.startswith('extract:'):
+            text_to_extract = user_input[len('extract:'):].strip()
+            extracted_info = extract_info_from_text(text_to_extract)
+            bot.send_message(message.chat.id, json.dumps(extracted_info, indent=2))
+        else:
+            response = generate_chatgpt_response(user_input)
+            bot.send_message(message.chat.id, response)
     except Exception as e:
-        logger.error(f"Error in ChatGPT API request: {e}")
-        return "Sorry, I encountered an error while processing your request."
+        logger.error(f"Error handling /ask command: {e}")
+        bot.send_message(message.chat.id, "Sorry, there was an error processing your request.")
+
+@bot.callback_query_handler(func=lambda call: call.data == 'free_version_chatgpt' or call.data == 'premium_version_chatgpt')
+def handle_chatgpt_callback(call: telebot.types.CallbackQuery) -> None:
+    """Handle callback queries related to the ChatGPT button."""
+    version_type = call.data.split('_', 2)[0].capitalize()
+    show_chatgpt_info(call.message.chat.id, version_type)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('service'))
 def handle_service_callback(call: telebot.types.CallbackQuery) -> None:
@@ -226,19 +238,6 @@ def handle_dev_bot_callback(call: telebot.types.CallbackQuery) -> None:
 def handle_support_bot_callback(call: telebot.types.CallbackQuery) -> None:
     """Handle callback queries related to the 'Support Bot' button."""
     bot.send_message(call.message.chat.id, "For support, please contact us at: https://t.me/+X999yVVgz4I5NDdl")
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith(('free_version_chatgpt', 'premium_version_chatgpt')))
-def handle_chatgpt_callback(call: telebot.types.CallbackQuery) -> None:
-    """Handle callback queries related to the ChatGPT button."""
-    version_type = call.data.split('_', 1)[0].capitalize()
-    bot.send_message(call.message.chat.id, f"Please send me your query for {version_type} ChatGPT:")
-
-@bot.message_handler(func=lambda message: message.text and message.text.startswith('Query:'))
-def handle_chatgpt_message(message: telebot.types.Message) -> None:
-    """Handle messages that should be sent to ChatGPT."""
-    user_query = message.text[len('Query:'):].strip()
-    response = handle_chatgpt_query(user_query)
-    bot.send_message(message.chat.id, response)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('convert'))
 def handle_convert_callback(call: telebot.types.CallbackQuery) -> None:
