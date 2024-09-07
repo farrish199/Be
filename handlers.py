@@ -145,6 +145,29 @@ def clone_bot(message: telebot.types.Message, bot: telebot.TeleBot) -> None:
     # Implement cloning logic here
     bot.reply_to(message, f"Bot cloned successfully with token: {bot_token}")
 
+def total_users(message):
+    """Handle the /total_users command to show total number of users."""
+    # Path to the file where user data is stored
+    user_data_file = 'user_data.json'
+
+    try:
+        # Load user data
+        if os.path.exists(user_data_file):
+            with open(user_data_file, 'r') as file:
+                user_data = json.load(file)
+                
+            # Calculate the number of users
+            total_users_count = len(user_data)
+            response_message = f"Total number of users: {total_users_count}"
+        else:
+            response_message = "User data file does not exist."
+    except Exception as e:
+        response_message = f"An error occurred: {e}"
+
+    # Send response message back to the chat
+    # Assuming `bot` is the TeleBot instance that is globally accessible
+    bot.send_message(message.chat.id, response_message)
+
 def generate_random_string(length=8) -> str:
     """Generate a random string of fixed length."""
     letters = string.ascii_letters + string.digits
