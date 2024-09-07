@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+import io
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from convfunc import text_to_image, image_to_text, image_to_pdf, pdf_to_image
@@ -39,135 +40,169 @@ bot = telebot.TeleBot(TOKEN)
 
 def save_auto_approve_group_id(group_id: int) -> None:
     """Save the group ID to a file."""
-    with open('auto_approve_group_id.txt', 'w') as f:
-        f.write(str(group_id))
+    try:
+        with open('auto_approve_group_id.txt', 'w') as f:
+            f.write(str(group_id))
+    except Exception as e:
+        logger.error(f"Error saving auto approve group ID: {e}")
 
 def get_auto_approve_group_id() -> int:
     """Load the group ID from the file."""
-    if os.path.exists('auto_approve_group_id.txt'):
-        with open('auto_approve_group_id.txt', 'r') as f:
-            return int(f.read().strip())
-    return 0
+    try:
+        if os.path.exists('auto_approve_group_id.txt'):
+            with open('auto_approve_group_id.txt', 'r') as f:
+                return int(f.read().strip())
+        return 0
+    except Exception as e:
+        logger.error(f"Error getting auto approve group ID: {e}")
+        return 0
 
 @bot.message_handler(content_types=['new_chat_members'])
 def handle_new_chat_member(message: telebot.types.Message) -> None:
     """Handle new members joining the group and automatically approve them."""
-    if message.new_chat_members:
-        for member in message.new_chat_members:
-            if member.id == bot.get_me().id:
-                group_id = message.chat.id
-                save_auto_approve_group_id(group_id)
-                bot.send_message(group_id, "Auto Approve is now enabled for this group.")
-                break
+    try:
+        if message.new_chat_members:
+            for member in message.new_chat_members:
+                if member.id == bot.get_me().id:
+                    group_id = message.chat.id
+                    save_auto_approve_group_id(group_id)
+                    bot.send_message(group_id, "Auto Approve is now enabled for this group.")
+                    break
 
-    group_id = get_auto_approve_group_id()
-    if group_id and message.chat.id == group_id:
-        bot.approve_chat_join_request(message.chat.id, message.from_user.id)
+        group_id = get_auto_approve_group_id()
+        if group_id and message.chat.id == group_id:
+            bot.approve_chat_join_request(message.chat.id, message.from_user.id)
+    except Exception as e:
+        logger.error(f"Error handling new chat member: {e}")
 
 def save_user_data(user_id: int) -> None:
     """Save user_id to user_data.json."""
-    file_path = 'user_data.json'
-    data = {}
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as f:
-            data = json.load(f)
+    try:
+        file_path = 'user_data.json'
+        data = {}
+        if os.path.exists(file_path):
+            with open(file_path, 'r') as f:
+                data = json.load(f)
 
-    data[str(user_id)] = {"user_id": user_id}
+        data[str(user_id)] = {"user_id": user_id}
 
-    with open(file_path, 'w') as f:
-        json.dump(data, f, indent=4)
+        with open(file_path, 'w') as f:
+            json.dump(data, f, indent=4)
+    except Exception as e:
+        logger.error(f"Error saving user data: {e}")
 
 @bot.message_handler(commands=['start'])
 def handle_start(message: telebot.types.Message) -> None:
     """Handle the /start command and show the main menu."""
-    user_id = message.from_user.id
-    save_user_data(user_id)
-    
-    markup = InlineKeyboardMarkup()
-    buttons = [
-        InlineKeyboardButton(text='Service', callback_data='service'),
-        InlineKeyboardButton(text='Dev Bot', callback_data='dev_bot'),
-        InlineKeyboardButton(text='Support Bot', callback_data='support_bot'),
-        InlineKeyboardButton(text='Clone Bot', callback_data='clone_bot')
-    ]
-    markup.add(*buttons)
-    bot.send_message(message.chat.id, "Welcome! Please choose an option from the menu below:", reply_markup=markup)
+    try:
+        user_id = message.from_user.id
+        save_user_data(user_id)
+        
+        markup = InlineKeyboardMarkup()
+        buttons = [
+            InlineKeyboardButton(text='Service', callback_data='service'),
+            InlineKeyboardButton(text='Dev Bot', callback_data='dev_bot'),
+            InlineKeyboardButton(text='Support Bot', callback_data='support_bot'),
+            InlineKeyboardButton(text='Clone Bot', callback_data='clone_bot')
+        ]
+        markup.add(*buttons)
+        bot.send_message(message.chat.id, "Welcome! Please choose an option from the menu below:", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"Error handling /start command: {e}")
 
 def show_service_submenu(chat_id: int) -> None:
     """Show sub-menu options under 'Service'."""
-    markup = InlineKeyboardMarkup()
-    buttons = [
-        InlineKeyboardButton(text='Free Version', callback_data='free_version'),
-        InlineKeyboardButton(text='Premium Version', callback_data='premium_version')
-    ]
-    markup.add(*buttons)
-    bot.send_message(chat_id, "Please choose an option from the service below:", reply_markup=markup)
+    try:
+        markup = InlineKeyboardMarkup()
+        buttons = [
+            InlineKeyboardButton(text='Free Version', callback_data='free_version'),
+            InlineKeyboardButton(text='Premium Version', callback_data='premium_version')
+        ]
+        markup.add(*buttons)
+        bot.send_message(chat_id, "Please choose an option from the service below:", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"Error showing service submenu: {e}")
 
 def show_version_submenu(chat_id: int, version_type: str) -> None:
     """Show sub-menu options under Free or Premium Version."""
-    markup = InlineKeyboardMarkup()
-    buttons = [
-        InlineKeyboardButton(text='Convert', callback_data=f'{version_type}_convert'),
-        InlineKeyboardButton(text='Broadcast', callback_data=f'{version_type}_broadcast'),
-        InlineKeyboardButton(text='Auto Approve', callback_data=f'{version_type}_auto_approve'),
-        InlineKeyboardButton(text='Downloader', callback_data=f'{version_type}_downloader'),
-        InlineKeyboardButton(text='ChatGPT', callback_data=f'{version_type}_chatgpt')
-    ]
-    markup.add(*buttons)
-    bot.send_message(chat_id, f"Please choose an option for {version_type}:", reply_markup=markup)
+    try:
+        markup = InlineKeyboardMarkup()
+        buttons = [
+            InlineKeyboardButton(text='Convert', callback_data=f'{version_type}_convert'),
+            InlineKeyboardButton(text='Broadcast', callback_data=f'{version_type}_broadcast'),
+            InlineKeyboardButton(text='Auto Approve', callback_data=f'{version_type}_auto_approve'),
+            InlineKeyboardButton(text='Downloader', callback_data=f'{version_type}_downloader'),
+            InlineKeyboardButton(text='ChatGPT', callback_data=f'{version_type}_chatgpt')
+        ]
+        markup.add(*buttons)
+        bot.send_message(chat_id, f"Please choose an option for {version_type}:", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"Error showing version submenu: {e}")
 
 def show_downloader_submenu(chat_id: int, version_type: str) -> None:
     """Show sub-menu options under 'Downloader'."""
-    markup = InlineKeyboardMarkup()
-    buttons = [
-        InlineKeyboardButton(text='FB', callback_data=f'{version_type}_fb'),
-        InlineKeyboardButton(text='IG', callback_data=f'{version_type}_ig'),
-        InlineKeyboardButton(text='TG', callback_data=f'{version_type}_tg'),
-        InlineKeyboardButton(text='TT', callback_data=f'{version_type}_tt'),
-        InlineKeyboardButton(text='YT', callback_data=f'{version_type}_yt')
-    ]
-    markup.add(*buttons)
-    bot.send_message(chat_id, f"Please choose an option for {version_type} Downloader:", reply_markup=markup)
+    try:
+        markup = InlineKeyboardMarkup()
+        buttons = [
+            InlineKeyboardButton(text='FB', callback_data=f'{version_type}_fb'),
+            InlineKeyboardButton(text='IG', callback_data=f'{version_type}_ig'),
+            InlineKeyboardButton(text='TG', callback_data=f'{version_type}_tg'),
+            InlineKeyboardButton(text='TT', callback_data=f'{version_type}_tt'),
+            InlineKeyboardButton(text='YT', callback_data=f'{version_type}_yt')
+        ]
+        markup.add(*buttons)
+        bot.send_message(chat_id, f"Please choose an option for {version_type} Downloader:", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"Error showing downloader submenu: {e}")
 
 def show_convert_submenu(chat_id: int) -> None:
     """Show sub-menu options under 'Convert'."""
-    markup = InlineKeyboardMarkup()
-    buttons = [
-        InlineKeyboardButton(text='Bug Vless', callback_data='bug_vless'),
-        InlineKeyboardButton(text='Text to Img', callback_data='text_to_img'),
-        InlineKeyboardButton(text='Img to Text', callback_data='img_to_text'),
-        InlineKeyboardButton(text='Img to PDF', callback_data='img_to_pdf'),
-        InlineKeyboardButton(text='PDF to Img', callback_data='pdf_to_img'),
-        InlineKeyboardButton(text='MP4 to Audio', callback_data='mp4_to_audio')
-    ]
-    markup.add(*buttons)
-    bot.send_message(chat_id, "Please choose an option for Convert:", reply_markup=markup)
+    try:
+        markup = InlineKeyboardMarkup()
+        buttons = [
+            InlineKeyboardButton(text='Bug Vless', callback_data='bug_vless'),
+            InlineKeyboardButton(text='Text to Img', callback_data='text_to_img'),
+            InlineKeyboardButton(text='Img to Text', callback_data='img_to_text'),
+            InlineKeyboardButton(text='Img to PDF', callback_data='img_to_pdf'),
+            InlineKeyboardButton(text='PDF to Img', callback_data='pdf_to_img'),
+            InlineKeyboardButton(text='MP4 to Audio', callback_data='mp4_to_audio')
+        ]
+        markup.add(*buttons)
+        bot.send_message(chat_id, "Please choose an option for Convert:", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"Error showing convert submenu: {e}")
 
 def show_broadcast_submenu(chat_id: int) -> None:
     """Show sub-menu options under 'Broadcast'."""
-    markup = InlineKeyboardMarkup()
-    buttons = [
-        InlineKeyboardButton(text='Broadcast User', callback_data='broadcast_user'),
-        InlineKeyboardButton(text='Broadcast Group', callback_data='broadcast_group'),
-        InlineKeyboardButton(text='Broadcast Channel', callback_data='broadcast_channel'),
-        InlineKeyboardButton(text='Broadcast All', callback_data='broadcast_all'),
-        InlineKeyboardButton(text='Schedule User', callback_data='schedule_user'),
-        InlineKeyboardButton(text='Schedule Group', callback_data='schedule_group'),
-        InlineKeyboardButton(text='Schedule Channel', callback_data='schedule_channel'),
-        InlineKeyboardButton(text='Schedule All', callback_data='schedule_all')
-    ]
-    markup.add(*buttons)
-    bot.send_message(chat_id, "Please choose an option for Broadcast:", reply_markup=markup)
+    try:
+        markup = InlineKeyboardMarkup()
+        buttons = [
+            InlineKeyboardButton(text='Broadcast User', callback_data='broadcast_user'),
+            InlineKeyboardButton(text='Broadcast Group', callback_data='broadcast_group'),
+            InlineKeyboardButton(text='Broadcast Channel', callback_data='broadcast_channel'),
+            InlineKeyboardButton(text='Broadcast All', callback_data='broadcast_all'),
+            InlineKeyboardButton(text='Schedule User', callback_data='schedule_user'),
+            InlineKeyboardButton(text='Schedule Group', callback_data='schedule_group'),
+            InlineKeyboardButton(text='Schedule Channel', callback_data='schedule_channel'),
+            InlineKeyboardButton(text='Schedule All', callback_data='schedule_all')
+        ]
+        markup.add(*buttons)
+        bot.send_message(chat_id, "Please choose an option for Broadcast:", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"Error showing broadcast submenu: {e}")
 
 def show_chatgpt_info(chat_id: int) -> None:
     """Send information about how to use ChatGPT."""
-    info_message = (
-        "To interact with ChatGPT, please use the /ask command followed by your question. "
-        "For example:\n\n"
-        "/ask What is the capital of France?\n\n"
-        "The bot will then send your question to ChatGPT and return the response."
-    )
-    bot.send_message(chat_id, info_message)
+    try:
+        info_message = (
+            "To interact with ChatGPT, please use the /ask command followed by your question. "
+            "For example:\n\n"
+            "/ask What is the capital of France?\n\n"
+            "The bot will then send your question to ChatGPT and return the response."
+        )
+        bot.send_message(chat_id, info_message)
+    except Exception as e:
+        logger.error(f"Error showing ChatGPT info: {e}")
 
 @bot.message_handler(commands=['ask'])
 def handle_ask_command(message: telebot.types.Message) -> None:
@@ -317,7 +352,7 @@ def handle_img_to_text_callback(call: telebot.types.CallbackQuery) -> None:
 
 @bot.message_handler(content_types=['photo'])
 def handle_image_message(message: telebot.types.Message) -> None:
-    """Handle image messages and convert them to text."""
+    """Handle image messages and convert them to text or PDF."""
     if message.reply_to_message and message.reply_to_message.text == "Please send me the image you want to convert to text.":
         file_info = bot.get_file(message.photo[-1].file_id)
         file = bot.download_file(file_info.file_path)
@@ -327,15 +362,7 @@ def handle_image_message(message: telebot.types.Message) -> None:
         text = image_to_text(image_stream)
         
         bot.send_message(message.chat.id, f"Here is the text extracted from the image:\n\n{text}")
-
-@bot.callback_query_handler(func=lambda call: call.data == 'img_to_pdf')
-def handle_img_to_pdf_callback(call: telebot.types.CallbackQuery) -> None:
-    """Handle the 'Img to PDF' callback."""
-    bot.send_message(call.message.chat.id, "Please send me the image you want to convert to PDF.")
-
-@bot.message_handler(content_types=['photo'])
-def handle_image_message(message: telebot.types.Message) -> None:
-    """Handle image messages and convert them to PDF."""
+    
     if message.reply_to_message and message.reply_to_message.text == "Please send me the image you want to convert to PDF.":
         file_info = bot.get_file(message.photo[-1].file_id)
         file = bot.download_file(file_info.file_path)
@@ -356,7 +383,7 @@ def handle_pdf_to_img_callback(call: telebot.types.CallbackQuery) -> None:
 
 @bot.message_handler(content_types=['document'])
 def handle_document_message(message: telebot.types.Message) -> None:
-    """Handle document messages and convert PDFs to images."""
+    """Handle document messages and convert PDFs to images or MP4s to audio."""
     if message.reply_to_message and message.reply_to_message.text == "Please send me the PDF file you want to convert to an image.":
         file_info = bot.get_file(message.document.file_id)
         file = bot.download_file(file_info.file_path)
@@ -367,15 +394,7 @@ def handle_document_message(message: telebot.types.Message) -> None:
         
         # Send the image file to the user
         bot.send_photo(message.chat.id, image_stream, caption="Here is your image.")
-
-@bot.callback_query_handler(func=lambda call: call.data == 'mp4_to_audio')
-def handle_mp4_to_audio_callback(call: telebot.types.CallbackQuery) -> None:
-    """Handle the 'MP4 to Audio' callback."""
-    bot.send_message(call.message.chat.id, "Please send me the MP4 file you want to convert to audio.")
-
-@bot.message_handler(content_types=['document'])
-def handle_document_message(message: telebot.types.Message) -> None:
-    """Handle document messages and convert MP4 to audio."""
+    
     if message.reply_to_message and message.reply_to_message.text == "Please send me the MP4 file you want to convert to audio.":
         file_info = bot.get_file(message.document.file_id)
         file = bot.download_file(file_info.file_path)
@@ -386,6 +405,7 @@ def handle_document_message(message: telebot.types.Message) -> None:
         
         # Send the audio file to the user
         bot.send_audio(message.chat.id, audio_stream, caption="Here is your audio.")
+
         
 def main() -> None:
     try:
