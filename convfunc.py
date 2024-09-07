@@ -1,3 +1,4 @@
+from pdf2image import convert_from_path
 from PIL import Image, ImageDraw, ImageFont
 import io
 import pytesseract
@@ -59,3 +60,16 @@ def image_to_pdf(image_stream: io.BytesIO, output_stream: io.BytesIO) -> None:
     c.showPage()
     c.save()
     output_stream.seek(0)
+
+def pdf_to_image(pdf_stream: io.BytesIO) -> io.BytesIO:
+    """Convert a PDF to an image and return the image in a BytesIO stream."""
+    images = convert_from_path(pdf_stream, dpi=300)
+    image_stream = io.BytesIO()
+    
+    # Assuming the PDF has one page and we convert only the first page to an image
+    if images:
+        image = images[0]
+        image.save(image_stream, format='PNG')  # You can change 'PNG' to other formats if needed
+        image_stream.seek(0)
+    
+    return image_stream
