@@ -9,8 +9,7 @@ from mp423 import mp4_to_audio
 from chatgpt import generate_chatgpt_response, extract_info_from_text
 from admintf import (
     bot as admin_bot, load_cloned_bots, load_admin_bot_id, is_admin_bot, save_json_file, schedule_broadcast_all, list_scheduled_jobs, cancel_scheduled_job, set_join_group_or_channel,
-    get_join_requirements, check_user_joined, broadcast_to_all_bots, broadcast_to_freemium_bots, broadcast_to_premium_bots,
-    handle_schedule_user_broadcast, handle_schedule_group_broadcast, handle_schedule_channel_broadcast, handle_schedule_all_broadcast,
+    get_join_requirements, check_user_joined, broadcast_to_all_bots, broadcast_to_freemium_bots, broadcast_to_premium_bots, list_admin_bot_id,    handle_schedule_user_broadcast, handle_schedule_group_broadcast, handle_schedule_channel_broadcast, handle_schedule_all_broadcast,
     handle_list_scheduled_jobs, handle_cancel_scheduled_job, handle_set_join, handle_user_not_joined
 )
 from broadcast import (
@@ -407,6 +406,9 @@ def handle_document_message(message: telebot.types.Message) -> None:
         # Send the audio file to the user
         bot.send_audio(message.chat.id, audio_stream, caption="Here is your audio.")
 
+@bot.message_handler(commands=['listadminbot'])
+    def handle_list_admin_bot_ids(message: telebot.types.Message) -> None:
+        list_admin_bot_ids(message)
         
 def main() -> None:
     try:
