@@ -266,7 +266,14 @@ def handle_bug_vless_callback(call: telebot.types.CallbackQuery) -> None:
     chat_id = call.message.chat.id
     conversion_keyboard = get_conversion_keyboard()
     bot.send_message(chat_id, "Please choose a conversion option:", reply_markup=conversion_keyboard)
-     
+
+@bot.message_handler(func=lambda message: message.text in [
+    "Digi BS", "Digi XL", "UmoFunz XL", "Maxis UL", "Unifi XL", "Yes XL", "Celcom XL", "Booster 1", "Booster 2"
+])
+def handle_conversion_option(message: telebot.types.Message) -> None:
+    """Handle user selecting a conversion option from the keyboard."""
+    handle_conversion(message, bot)
+
 @bot.message_handler(commands=['set_admin_id'])
 def handle_set_admin_id(message: telebot.types.Message) -> None:
     set_admin_id(message, bot)
