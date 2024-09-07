@@ -2,29 +2,28 @@ import logging
 import os
 import json
 import telebot
-from chatgpt import generate_chatgpt_response, extract_info_from_text
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from txtoimg import text_to_image
+from chatgpt import generate_chatgpt_response, extract_info_from_text
 from admintf import (
-     bot as admin_bot, load_cloned_bots, is_admin_bot, save_json_file, schedule_broadcast_all, list_scheduled_jobs, cancel_scheduled_job, set_join_group_or_channel, get_join_requirements, 
-     check_user_joined, broadcast_to_all_bots, broadcast_to_freemium_bots, broadcast_to_premium_bots, handle_schedule_user_broadcast, handle_schedule_group_broadcast,
-     handle_schedule_channel_broadcast, handle_schedule_all_broadcast,handle_list_scheduled_jobs, handle_cancel_scheduled_job, handle_set_join, handle_user_not_joined
+    bot as admin_bot, load_cloned_bots, is_admin_bot, save_json_file, schedule_broadcast_all, list_scheduled_jobs, cancel_scheduled_job, set_join_group_or_channel,
+    get_join_requirements, check_user_joined, broadcast_to_all_bots, broadcast_to_freemium_bots, broadcast_to_premium_bots,
+    handle_schedule_user_broadcast, handle_schedule_group_broadcast, handle_schedule_channel_broadcast, handle_schedule_all_broadcast,
+    handle_list_scheduled_jobs, handle_cancel_scheduled_job, handle_set_join, handle_user_not_joined
 )
-from broadcast import ( 
-     load_json_file, load_user_data, load_group_ids, load_channel_ids, is_admin, is_freemium, is_premium, get_admins_of_chat, 
-     schedule_broadcast, broadcast_to_user, broadcast_to_group, broadcast_to_channel, broadcast_to_all, schedule_user_broadcast,
-     schedule_group_broadcast, schedule_channel_broadcast, schedule_all_broadcast
+from broadcast import (
+    load_json_file, load_user_data, load_group_ids, load_channel_ids, is_admin, is_freemium, is_premium, get_admins_of_chat, 
+    schedule_broadcast, broadcast_to_user, broadcast_to_group, broadcast_to_channel, broadcast_to_all, schedule_user_broadcast,
+    schedule_group_broadcast, schedule_channel_broadcast, schedule_all_broadcast
 )
 from handlers import (
     start, button, handle_message, set_admin_id, set_user_id, clone_bot, process_payment, payment_callback, total_users,
     handle_downloader_fb, handle_downloader_tg, handle_downloader_ig, handle_downloader_tt, handle_downloader_yt,
-    is_user_allowed, is_user_paid, save_user_data, extract_info_from_text, handle_conversion,
-    generate_random_string, create_category, create_bill, update_config
+    is_user_allowed, is_user_paid, save_user_data, handle_conversion, generate_random_string, create_category, create_bill, update_config
 )
-from keyboards import get_main_keyboard, get_submenu_keyboard, get_conversion_keyboard, SUBMENU_OPTIONS
-from clonebot import get_user_data, clone_bot, fetch_additional_data, get_user_bot_limits
-from config import TOKEN as TELEGRAM_BOT_TOKEN, ADMIN_BOT_ID, ADMIN_USER_ID, ALLOWED_USER_IDS, PAID_USER_IDS, TOYYIBPAY_SECRET_KEY
+from keyboards import get_main_keyboard, get_submenu_keyboard, get_conversion_keyboard
 
-# Set up logging
+# Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -65,20 +64,15 @@ def handle_new_chat_member(message: telebot.types.Message) -> None:
         bot.approve_chat_join_request(message.chat.id, message.from_user.id)
 
 def save_user_data(user_id: int) -> None:
-    """Simpan user_id ke dalam user_data.json."""
+    """Save user_id to user_data.json."""
     file_path = 'user_data.json'
-    
-    # Muatkan data sedia ada
+    data = {}
     if os.path.exists(file_path):
         with open(file_path, 'r') as f:
             data = json.load(f)
-    else:
-        data = {}
 
-    # Tambah atau kemas kini user_id dalam data
     data[str(user_id)] = {"user_id": user_id}
 
-    # Simpan data ke dalam fail
     with open(file_path, 'w') as f:
         json.dump(data, f, indent=4)
 
@@ -86,7 +80,7 @@ def save_user_data(user_id: int) -> None:
 def handle_start(message: telebot.types.Message) -> None:
     """Handle the /start command and show the main menu."""
     user_id = message.from_user.id
-    save_user_data(user_id)  # Simpan user_id ke dalam user_data.json
+    save_user_data(user_id)
     
     markup = InlineKeyboardMarkup()
     buttons = [
@@ -179,7 +173,6 @@ def handle_ask_command(message: telebot.types.Message) -> None:
     """Handle /ask command to interact with ChatGPT or extract information."""
     try:
         user_input = message.text[len('/ask'):].strip()
-
         if user_input.startswith('extract:'):
             text_to_extract = user_input[len('extract:'):].strip()
             extracted_info = extract_info_from_text(text_to_extract)
@@ -191,11 +184,10 @@ def handle_ask_command(message: telebot.types.Message) -> None:
         logger.error(f"Error handling /ask command: {e}")
         bot.send_message(message.chat.id, "Sorry, there was an error processing your request.")
 
-@bot.callback_query_handler(func=lambda call: call.data == 'free_version_chatgpt' or call.data == 'premium_version_chatgpt')
+@bot.callback_query_handler(func=lambda call: call.data.startswith(('free_version_chatgpt', 'premium_version_chatgpt')))
 def handle_chatgpt_callback(call: telebot.types.CallbackQuery) -> None:
     """Handle callback queries related to the ChatGPT button."""
-    version_type = call.data.split('_', 2)[0].capitalize()
-    show_chatgpt_info(call.message.chat.id, version_type)
+    show_chatgpt_info(call.message.chat.id)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith('service'))
 def handle_service_callback(call: telebot.types.CallbackQuery) -> None:
@@ -212,13 +204,13 @@ def handle_version_callback(call: telebot.types.CallbackQuery) -> None:
 @bot.callback_query_handler(func=lambda call: call.data.startswith(('free_version_downloader', 'premium_version_downloader')))
 def handle_downloader_callback(call: telebot.types.CallbackQuery) -> None:
     """Handle callback queries for Downloader options."""
-    version_type = call.data.split('_', 2)[0].capitalize()
+    version_type = call.data.split('_')[2].capitalize()
     show_downloader_submenu(call.message.chat.id, version_type)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith(('free_version_auto_approve', 'premium_version_auto_approve')))
 def handle_auto_approve_callback(call: telebot.types.CallbackQuery) -> None:
     """Handle callback queries for Auto Approve options."""
-    version_type = call.data.split('_', 1)[0].capitalize()
+    version_type = call.data.split('_')[0].capitalize()
     bot.send_message(call.message.chat.id, f"Auto Approve functionality is now active for the {version_type} version.")
     group_id = get_auto_approve_group_id()
     if group_id:
@@ -245,7 +237,6 @@ def handle_convert_callback(call: telebot.types.CallbackQuery) -> None:
     if call.data == 'convert':
         show_convert_submenu(call.message.chat.id)
 
-# Add handlers for conversion options
 conversion_handlers = {
     'bug_vless': "Bug Vless functionality is under development.",
     'text_to_img': "Text to Image functionality is under development.",
@@ -274,81 +265,49 @@ def handle_conversion_option(message: telebot.types.Message) -> None:
     """Handle user selecting a conversion option from the keyboard."""
     handle_conversion(message, bot)
 
-@bot.message_handler(commands=['set_admin_id'])
-def handle_set_admin_id(message: telebot.types.Message) -> None:
-    set_admin_id(message, bot)
+# Command Handlers
+command_handlers = {
+    'set_admin_id': set_admin_id,
+    'set_user_id': set_user_id,
+    'process_payment': process_payment,
+    'payment_callback': payment_callback,
+    'total_users': total_users,
+    'downloader_fb': handle_downloader_fb,
+    'downloader_tg': handle_downloader_tg,
+    'downloader_ig': handle_downloader_ig,
+    'downloader_tt': handle_downloader_tt,
+    'downloader_yt': handle_downloader_yt,
+    'broadcast_user': broadcast_to_user,
+    'broadcast_group': broadcast_to_group,
+    'broadcast_channel': broadcast_to_channel,
+    'broadcast_all': broadcast_to_all,
+    'schedule_user': schedule_user_broadcast,
+    'schedule_group': schedule_group_broadcast,
+    'schedule_channel': schedule_channel_broadcast,
+    'schedule_all': schedule_all_broadcast
+}
 
-@bot.message_handler(commands=['set_user_id'])
-def handle_set_user_id(message: telebot.types.Message) -> None:
-    set_user_id(message, bot)
-
-@bot.message_handler(commands=['process_payment'])
-def handle_process_payment(message: telebot.types.Message) -> None:
-    process_payment(message, bot)
-
-@bot.message_handler(commands=['payment_callback'])
-def handle_payment_callback(message: telebot.types.Message) -> None:
-    payment_callback(message, bot)
-
-@bot.message_handler(commands=['total_users'])
-def handle_total_users(message: telebot.types.Message) -> None:
-    total_users(message, bot)
-
-@bot.message_handler(commands=['downloader_fb'])
-def handle_downloader_fb_command(message: telebot.types.Message) -> None:
-    handle_downloader_fb(message, bot)
-
-@bot.message_handler(commands=['downloader_tg'])
-def handle_downloader_tg_command(message: telebot.types.Message) -> None:
-    handle_downloader_tg(message, bot)
-
-@bot.message_handler(commands=['downloader_ig'])
-def handle_downloader_ig_command(message: telebot.types.Message) -> None:
-    handle_downloader_ig(message, bot)
-
-@bot.message_handler(commands=['downloader_tt'])
-def handle_downloader_tt_command(message: telebot.types.Message) -> None:
-    handle_downloader_tt(message, bot)
-
-@bot.message_handler(commands=['downloader_yt'])
-def handle_downloader_yt_command(message: telebot.types.Message) -> None:
-    handle_downloader_yt(message, bot)
-
-@bot.message_handler(commands=['broadcast_user'])
-def broadcast_to_user_command(message: telebot.types.Message) -> None:
-    broadcast_to_user(message)
-
-@bot.message_handler(commands=['broadcast_group'])
-def broadcast_to_group_command(message: telebot.types.Message) -> None:
-    broadcast_to_group(message)
-
-@bot.message_handler(commands=['broadcast_channel'])
-def broadcast_to_channel_command(message: telebot.types.Message) -> None:
-    broadcast_to_channel(message)
-
-@bot.message_handler(commands=['broadcast_all'])
-def broadcast_to_all_command(message: telebot.types.Message) -> None:
-    broadcast_to_all(message)
-
-@bot.message_handler(commands=['schedule_user'])
-def schedule_user_broadcast_command(message: telebot.types.Message) -> None:
-    schedule_user_broadcast(message)
-
-@bot.message_handler(commands=['schedule_group'])
-def schedule_group_broadcast_command(message: telebot.types.Message) -> None:
-    schedule_group_broadcast(message)
-
-@bot.message_handler(commands=['schedule_channel'])
-def schedule_channel_broadcast_command(message: telebot.types.Message) -> None:
-    schedule_channel_broadcast(message)
-
-@bot.message_handler(commands=['schedule_all'])
-def schedule_all_broadcast_command(message: telebot.types.Message) -> None:
-    schedule_all_broadcast(message)
+for command, handler in command_handlers.items():
+    @bot.message_handler(commands=[command])
+    def handle_command(message: telebot.types.Message, handler=handler) -> None:
+        handler(message)
 
 @bot.message_handler(func=lambda message: not message.text.startswith('/'))
 def handle_text_message(message: telebot.types.Message) -> None:
     handle_message(message, bot)
+
+@bot.callback_query_handler(func=lambda call: call.data == 'text_to_img')
+def handle_text_to_img_callback(call: telebot.types.CallbackQuery) -> None:
+    """Handle the 'Text to Img' callback."""
+    bot.send_message(call.message.chat.id, "Please send me the text you want to convert to an image.")
+
+@bot.message_handler(func=lambda message: message.text and message.reply_to_message and message.reply_to_message.text == "Please send me the text you want to convert to an image.")
+def handle_text_to_image_message(message: telebot.types.Message) -> None:
+    """Handle the text message to convert it to an image."""
+    text = message.text
+    image_stream = text_to_image(text)
+    
+    bot.send_photo(message.chat.id, photo=image_stream, caption="Here is your image:")
 
 def main() -> None:
     try:
