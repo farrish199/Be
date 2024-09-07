@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 import io
+import pytesseract
 import telebot
 
 def text_to_image(text: str) -> io.BytesIO:
@@ -21,3 +22,9 @@ def text_to_image(text: str) -> io.BytesIO:
     image.save(img_bytes, format='PNG')
     img_bytes.seek(0)
     return img_bytes
+
+def image_to_text(image_stream: io.BytesIO) -> str:
+    """Convert an image to text using OCR and return the extracted text."""
+    image = Image.open(image_stream)
+    text = pytesseract.image_to_string(image)
+    return text
