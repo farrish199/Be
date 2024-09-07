@@ -367,6 +367,25 @@ def handle_document_message(message: telebot.types.Message) -> None:
         
         # Send the image file to the user
         bot.send_photo(message.chat.id, image_stream, caption="Here is your image.")
+
+@bot.callback_query_handler(func=lambda call: call.data == 'mp4_to_audio')
+def handle_mp4_to_audio_callback(call: telebot.types.CallbackQuery) -> None:
+    """Handle the 'MP4 to Audio' callback."""
+    bot.send_message(call.message.chat.id, "Please send me the MP4 file you want to convert to audio.")
+
+@bot.message_handler(content_types=['document'])
+def handle_document_message(message: telebot.types.Message) -> None:
+    """Handle document messages and convert MP4 to audio."""
+    if message.reply_to_message and message.reply_to_message.text == "Please send me the MP4 file you want to convert to audio.":
+        file_info = bot.get_file(message.document.file_id)
+        file = bot.download_file(file_info.file_path)
+        mp4_stream = io.BytesIO(file)
+        
+        # Convert MP4 to audio
+        audio_stream = mp4_to_audio(mp4_stream)
+        
+        # Send the audio file to the user
+        bot.send_audio(message.chat.id, audio_stream, caption="Here is your audio.")
         
 def main() -> None:
     try:
