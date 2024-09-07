@@ -260,6 +260,13 @@ for callback_data, response_message in conversion_handlers.items():
     def handle_conversion_callback(call: telebot.types.CallbackQuery, response_message=response_message) -> None:
         bot.send_message(call.message.chat.id, response_message)
 
+@bot.callback_query_handler(func=lambda call: call.data == 'bug_vless')
+def handle_bug_vless_callback(call: telebot.types.CallbackQuery) -> None:
+    """Handle callback for Bug Vless option."""
+    chat_id = call.message.chat.id
+    conversion_keyboard = get_conversion_keyboard()
+    bot.send_message(chat_id, "Please choose a conversion option:", reply_markup=conversion_keyboard)
+     
 @bot.message_handler(commands=['set_admin_id'])
 def handle_set_admin_id(message: telebot.types.Message) -> None:
     set_admin_id(message, bot)
