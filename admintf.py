@@ -45,8 +45,9 @@ def load_cloned_bots() -> list:
             return json.load(file)
     return []
 
+# Load admin bot IDs from JSON file
 def load_admin_bot_id() -> list:
-    """Load admin IDs from the configuration file."""
+    """Load admin bot IDs from the configuration file."""
     config_file = 'admin_bot_id.json'
     if os.path.exists(config_file):
         with open(config_file, 'r') as file:
@@ -54,19 +55,26 @@ def load_admin_bot_id() -> list:
             return config_data.get('admin_bot_id', [])
     return []
 
-def is_admin_bot(user_id: int) -> bool:
-    """Check if the user is an admin bot."""
-    admin_bot_id = load_admin_bot_id()
-    return user_id in admin_bot_id
+# Handle the /listadminbot command
+def list_admin_bot_ids(message: telebot.types.Message) -> None:
+    """Send a list of all admin bot IDs to the user."""
+    admin_bot_ids = load_admin_bot_id()
+    
+    # Convert list of IDs to a string
+    admin_bot_ids_text = '\n'.join(map(str, admin_bot_ids))
+    
+    # Send the response to the user
+    if admin_bot_ids_text:
+        response = f"Admin Bot IDs:\n{admin_bot_ids_text}"
+    else:
+        response = "No admin bot IDs found."
+    
+    # Reply with the list of IDs
+    message.reply_text(response)
     
 def is_freemium(user_id: int) -> bool:
     """Check if the user is a freemium user."""
     return user_id in load_user_data() and load_user_data()[str(user_id)].get('type') == 'freemium'
-
-def get_admins_of_chat(chat_id: int) -> list:
-    """Get a list of admins of a chat."""
-    # Implement function to get chat admins
-    pass
 
 def broadcast_message(message_text: str, ids: list, entity_type: str) -> None:
     """Broadcast message to a list of IDs (users, groups, channels)."""
