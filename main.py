@@ -3,7 +3,7 @@ import os
 import json
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
-from txtoimg import text_to_image, image_to_text
+from convfunc import text_to_image, image_to_text, image_to_pdf
 from chatgpt import generate_chatgpt_response, extract_info_from_text
 from admintf import (
     bot as admin_bot, load_cloned_bots, is_admin_bot, save_json_file, schedule_broadcast_all, list_scheduled_jobs, cancel_scheduled_job, set_join_group_or_channel,
@@ -326,7 +326,28 @@ def handle_image_message(message: telebot.types.Message) -> None:
         text = image_to_text(image_stream)
         
         bot.send_message(message.chat.id, f"Here is the text extracted from the image:\n\n{text}")
+
+@bot.callback_query_handler(func=lambda call: call.data == 'img_to_pdf')
+def handle_img_to_pdf_callback(call: telebot.types.CallbackQuery) -> None:
+    """Handle the 'Img to PDF' callback."""
+    bot.send_message(call.message.chat.id, "Please send me the image you want to convert to PDF.")
+
+@bot.message_handler(content_types=['photo'])
+def handle_image_message(message: telebot.types.Message) -> None:
+    """Handle image messages and convert them to PDF."""
+    if message.reply_to_message and message.reply_to_message.text == "Please send me the image you want to convert to PDF.":
+        file_info = bot.get_file(message.photo[-1].file_id)
+        file = bot.download_file(file_info.file_path)
+        image_stream = io.BytesIO(file)
         
+        # Convert image to PDF
+        pdf_stream = io.BytesIO()
+        image_to_pdf(image_stream, pdf_stream)
+        
+        # Send the PDF file to the user
+        pdf_stream.seek(0)
+        bot.send_document(message.chat.id, pdf_stream, caption="Here is your PDF.")
+
 def main() -> None:
     try:
         logger.info("Starting bot...")
