@@ -4,6 +4,7 @@ import json
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 from convfunc import text_to_image, image_to_text, image_to_pdf, pdf_to_image
+from mp423 import mp4_to_audio
 from chatgpt import generate_chatgpt_response, extract_info_from_text
 from admintf import (
     bot as admin_bot, load_cloned_bots, is_admin_bot, save_json_file, schedule_broadcast_all, list_scheduled_jobs, cancel_scheduled_job, set_join_group_or_channel,
