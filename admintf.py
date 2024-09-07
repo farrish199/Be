@@ -45,10 +45,20 @@ def load_cloned_bots() -> list:
             return json.load(file)
     return []
 
+def load_admin_bot_id() -> list:
+    """Load admin IDs from the configuration file."""
+    config_file = 'admin_bot_id.json'
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as file:
+            config_data = json.load(file)
+            return config_data.get('admin_bot_id', [])
+    return []
+
 def is_admin_bot(user_id: int) -> bool:
     """Check if the user is an admin bot."""
-    return user_id == ADMIN_BOT_ID
-
+    admin_bot_id = load_admin_bot_id()
+    return user_id in admin_bot_id
+    
 def is_freemium(user_id: int) -> bool:
     """Check if the user is a freemium user."""
     return user_id in load_user_data() and load_user_data()[str(user_id)].get('type') == 'freemium'
