@@ -4,7 +4,7 @@ import requests
 from typing import Dict, Optional
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from config import PAID_USER_IDS, TOYYIBPAY_SECRET_KEY
+from config import TOKEN as TELEGRAM_BOT_TOKEN, API_ID, API_HASH, PAID_USER_IDS, TOYYIBPAY_SECRET_KEY
 
 # Define type aliases for better readability
 UserData = Dict[str, Optional[int]]
@@ -15,7 +15,7 @@ FREE_VERSION_LIMIT = 1
 PREMIUM_VERSION_LIMIT = 5
 
 # Initialize the Pyrogram client
-app = Client("clonebot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("clonebot", api_id=API_ID, api_hash=API_HASH, bot_token=TELEGRAM_BOT_TOKEN)
 
 def get_user_bot_limits() -> Dict[str, int]:
     """Retrieve default bot limits for users."""
