@@ -7,10 +7,10 @@ from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.date import DateTrigger
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from config import API_ID, API_HASH, BOT_TOKEN, ADMIN_USER_ID
+from config import API_ID, API_HASH, TELEGRAM_BOT_TOKEN, ADMIN_USER_ID
 
 # Initialize the Pyrogram client
-app = Client("admin_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+app = Client("admin_bot", api_id=API_ID, api_hash=API_HASH, bot_token=TELEGRAM_BOT_TOKEN)
 scheduler = BackgroundScheduler()
 scheduler.start()
 
