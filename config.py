@@ -12,6 +12,12 @@ logger = logging.getLogger(__name__)
 # Load the token from an environment variable for security
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 
+# Api ID
+API_ID = os.getenv('API_ID') # Replace with your actual api ID
+
+# Api Hash
+API_HASH = os.getenv('API_HASH') # Replace with your actual api hash
+
 # Admin user ID
 ADMIN_USER_ID = int(os.getenv('ADMIN_USER_ID', '5597816302'))  # Replace with your actual admin user ID
 
@@ -32,7 +38,15 @@ def validate_config():
     if not TOKEN:
         logger.error("Telegram bot token not found. Please set the TELEGRAM_BOT_TOKEN environment variable.")
         exit(1)
-
+        
+    if not API_ID:
+        logger.error("Api ID not found. Please set the API_ID environment variable.")
+        exit(1)
+    
+    if not API_HASH:
+        logger.error("Api Hash not found. Please set the API_HASH environment variable.")
+        exit(1)
+    
     if not ADMIN_USER_ID:
         logger.error("Admin user ID not found. Please set the ADMIN_USER_ID environment variable.")
         exit(1)
