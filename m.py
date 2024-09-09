@@ -24,25 +24,19 @@ from handlers import (
     is_user_allowed, is_user_paid, save_user_data, handle_conversion, generate_random_string, create_category, create_bill, update_config
 )
 from keyboards import get_main_keyboard, get_submenu_keyboard, get_conversion_keyboard, SUBMENU_OPTIONS
-from config import TOKEN as TELEGRAM_BOT_TOKEN, ADMIN_BOT_ID, ADMIN_USER_ID, ALLOWED_USER_IDS, PAID_USER_IDS, TOYYIBPAY_SECRET_KEY
+from config import TOKEN as TELEGRAM_BOT_TOKEN,API_ID, API_HASH, ADMIN_BOT_ID, ADMIN_USER_ID, ALLOWED_USER_IDS, PAID_USER_IDS, TOYYIBPAY_SECRET_KEY
 
 # Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-API_ID = "10115546"
-API_HASH = "366347107f54aabc951cfa9d3c2fb2ce"
-BOT_TOKEN = "7409687169:AAGM1ybul2bukhyumgpQy8CBlrxUDeP-ijI"
-
-app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
-
-# Get the bot token from environment variables
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 if not TOKEN:
     logger.error("Token bot Telegram tidak diset dalam pembolehubah persekitaran.")
     exit(1)
 
-app = Client("my_bot", bot_token=TOKEN)
+# Get the api id, api hash & telegram bot token from environment variables
+app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=TELEGRAM_BOT_TOKEN)
 
 def save_auto_approve_group_id(group_id: int) -> None:
     """Simpan ID kumpulan untuk kelulusan automatik."""
