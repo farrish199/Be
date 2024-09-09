@@ -1,12 +1,9 @@
+import io
 from pdf2image import convert_from_path
 from PIL import Image, ImageDraw, ImageFont
-import io
 import pytesseract
-import telebot
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
-
-
 
 def text_to_image(text: str) -> io.BytesIO:
     """Convert text to an image and return it as a BytesIO object."""
@@ -56,13 +53,19 @@ def image_to_pdf(image_stream: io.BytesIO, output_stream: io.BytesIO) -> None:
     x = (width - new_width) / 2
     y = (height - new_height) / 2
     
-    c.drawImage(io.BytesIO(image.convert('RGB').tobytes()), x, y, new_width, new_height)
+    # Save the image in memory and draw it on the PDF
+    img_bytes = io.BytesIO()
+    image.save(img_bytes, format='PNG')
+    img_bytes.seek(0)
+    
+    c.drawImage(img_bytes, x, y, new_width, new_height)
     c.showPage()
     c.save()
     output_stream.seek(0)
 
 def pdf_to_image(pdf_stream: io.BytesIO) -> io.BytesIO:
     """Convert a PDF to an image and return the image in a BytesIO stream."""
+    pdf_stream.seek(0)  # Ensure the stream is at the beginning
     images = convert_from_path(pdf_stream, dpi=300)
     image_stream = io.BytesIO()
     
