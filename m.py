@@ -30,6 +30,12 @@ from config import TOKEN as TELEGRAM_BOT_TOKEN, ADMIN_BOT_ID, ADMIN_USER_ID, ALL
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+API_ID = "10115546"
+API_HASH = "366347107f54aabc951cfa9d3c2fb2ce"
+BOT_TOKEN = "7409687169:AAGM1ybul2bukhyumgpQy8CBlrxUDeP-ijI"
+
+app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+
 # Get the bot token from environment variables
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 if not TOKEN:
