@@ -2,7 +2,8 @@ import os
 import json
 import requests
 from typing import Dict, Optional
-import telebot
+from pyrogram import Client, filters
+from pyrogram.types import Message
 from config import PAID_USER_IDS, TOYYIBPAY_SECRET_KEY
 
 # Define type aliases for better readability
@@ -12,6 +13,9 @@ PaymentStatus = Dict[str, str]
 # Constants for bot limits
 FREE_VERSION_LIMIT = 1
 PREMIUM_VERSION_LIMIT = 5
+
+# Initialize the Pyrogram client
+app = Client("clonebot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 def get_user_bot_limits() -> Dict[str, int]:
     """Retrieve default bot limits for users."""
@@ -41,7 +45,7 @@ def save_user_data(user_data: Dict[str, UserData]) -> None:
     with open('user_data.json', 'w') as file:
         json.dump(user_data, file, indent=4)
 
-def clone_bot(message: telebot.types.Message, bot: telebot.TeleBot) -> None:
+def clone_bot(client: Client, message: Message) -> None:
     """Handle bot cloning based on user payment status and limits."""
     user_id = str(message.from_user.id)
     user_data = get_user_data(message.from_user.id)
@@ -55,17 +59,17 @@ def clone_bot(message: telebot.types.Message, bot: telebot.TeleBot) -> None:
         if user_data.get('premium_bots', 0) < PREMIUM_VERSION_LIMIT:
             user_data['premium_bots'] = user_data.get('premium_bots', 0) + 1
             save_user_data({user_id: user_data})
-            bot.reply_to(message, "Your bot is being cloned...")
+            client.send_message(message.chat.id, "Your bot is being cloned...")
         else:
-            bot.reply_to(message, "You have reached the maximum number of bot clones allowed for premium users.")
+            client.send_message(message.chat.id, "You have reached the maximum number of bot clones allowed for premium users.")
     else:
         # Check and update bot count for free users
         if user_data.get('freemium_bots', 0) < FREE_VERSION_LIMIT:
             user_data['freemium_bots'] = user_data.get('freemium_bots', 0) + 1
             save_user_data({user_id: user_data})
-            bot.reply_to(message, "Your bot is being cloned...")
+            client.send_message(message.chat.id, "Your bot is being cloned...")
         else:
-            bot.reply_to(message, "You have reached the maximum number of bot clones allowed for free users.")
+            client.send_message(message.chat.id, "You have reached the maximum number of bot clones allowed for free users.")
 
 def fetch_additional_data(api_url: str) -> Dict[str, str]:
     """Fetch additional data from an external API."""
@@ -81,3 +85,13 @@ def fetch_additional_data(api_url: str) -> Dict[str, str]:
 # Logger configuration
 import logging
 logger = logging.getLogger(__name__)
+
+# Pyrogram handlers
+@app.on_message(filters.command('clone') & filters.private)
+def handle_clone_command(client: Client, message: Message) -> None:
+    """Handle the clone command."""
+    clone_bot(client, message)
+
+# Start the Pyrogram client
+if __name__ == "__main__":
+    app.run()
