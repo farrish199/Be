@@ -171,8 +171,8 @@ def schedule_group_broadcast(message: telebot.types.Message) -> None:
     else:
         bot.reply_to(message, "You do not have permission to schedule broadcasts.")
 
-@bot.message_handler(commands=['schedule_channel'])
-def schedule_channel_broadcast(message: telebot.types.Message) -> None:
+@app.on_message(filters.command('schedule_channel') & filters.user(ADMIN_USER_ID))
+def schedule_channel_broadcast(client: Client, message: Message) -> None:
     """Schedule broadcast message to all channels."""
     if is_admin(message.from_user.id):
         try:
@@ -182,14 +182,14 @@ def schedule_channel_broadcast(message: telebot.types.Message) -> None:
             channel_ids = load_channel_ids()
             freemium_channels = [cid for cid in channel_ids if any(is_freemium(admin_id) for admin_id in get_admins_of_chat(cid))]
             schedule_broadcast(message_text, freemium_channels, "channel", send_time)
-            bot.reply_to(message, f"Scheduled broadcast to all channels at {send_time}.")
+            client.send_message(message.chat.id, f"Scheduled broadcast to all channels at {send_time}.")
         except ValueError:
-            bot.reply_to(message, "Invalid date format. Please use ISO format (e.g., 2024-09-01T12:00:00).")
+            client.send_message(message.chat.id, "Invalid date format. Please use ISO format (e.g., 2024-09-01T12:00:00).")
     else:
-        bot.reply_to(message, "You do not have permission to schedule broadcasts.")
+        client.send_message(message.chat.id, "You do not have permission to schedule broadcasts.")
 
-@bot.message_handler(commands=['schedule_all'])
-def schedule_all_broadcast(message: telebot.types.Message) -> None:
+@app.on_message(filters.command('schedule_all') & filters.user(ADMIN_USER_ID))
+def schedule_all_broadcast(client: Client, message: Message) -> None:
     """Schedule a broadcast message to all users, groups, and channels."""
     if is_admin(message.from_user.id):
         try:
@@ -197,11 +197,11 @@ def schedule_all_broadcast(message: telebot.types.Message) -> None:
             message_text = ' '.join(message_parts)
             send_time = datetime.fromisoformat(datetime_str)
             schedule_all_broadcast(message_text, send_time)
-            bot.reply_to(message, f"Scheduled broadcast to all users, groups, and channels at {send_time}.")
+            client.send_message(message.chat.id, f"Scheduled broadcast to all users, groups, and channels at {send_time}.")
         except ValueError:
-            bot.reply_to(message, "Invalid date format. Please use ISO format (e.g., 2024-09-01T12:00:00).")
+            client.send_message(message.chat.id, "Invalid date format. Please use ISO format (e.g., 2024-09-01T12:00:00).")
     else:
-        bot.reply_to(message, "You do not have permission to schedule broadcasts.")
+        client.send_message(message.chat.id, "You do not have permission to schedule broadcasts.")
 
-# Polling the bot
-bot.polling(none_stop=True)
+# Run the bot
+app.run()
