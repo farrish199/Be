@@ -1,5 +1,4 @@
-import telebot
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 
 def get_main_keyboard() -> InlineKeyboardMarkup:
     """Create the main menu keyboard."""
@@ -53,9 +52,9 @@ def get_submenu_keyboard(option: str) -> InlineKeyboardMarkup:
                     button_schedule_user, button_schedule_group, button_schedule_channel, button_schedule_all)
     return markup
 
-def get_conversion_keyboard() -> telebot.types.ReplyKeyboardMarkup:
+def get_conversion_keyboard() -> ReplyKeyboardMarkup:
     """Create a keyboard for conversion options."""
-    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True)
+    markup = ReplyKeyboardMarkup(resize_keyboard=True)
     buttons = ["Digi BS", "Digi XL", "UmoFunz XL", "Maxis UL", "Unifi XL", "Yes XL", "Celcom XL", "Booster 1", "Booster 2"]
     markup.add(*buttons)
     return markup
