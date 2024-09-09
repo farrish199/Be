@@ -91,6 +91,47 @@ def save_user_data(user_id: int) -> None:
     except Exception as e:
         logger.error(f"Ralat menyimpan data pengguna: {e}")
 
+@app.on_message(filters.command("ask"))
+def handle_ask_command(client: Client, message) -> None:
+    """Handle /ask command to interact with ChatGPT or extract information."""
+    try:
+        user_input = message.text[len('/ask'):].strip()
+        if user_input.startswith('extract:'):
+            text_to_extract = user_input[len('extract:'):].strip()
+            extracted_info = extract_info_from_text(text_to_extract)
+            client.send_message(message.chat.id, json.dumps(extracted_info, indent=2))
+        else:
+            response = generate_chatgpt_response(user_input)
+            client.send_message(message.chat.id, response)
+    except Exception as e:
+        logger.error(f"Ralat mengendalikan arahan /ask: {e}")
+        client.send_message(message.chat.id, "Maaf, terdapat ralat semasa memproses permintaan anda.")
+
+@app.on_callback_query()
+def handle_chatgpt_callback(client: Client, query: CallbackQuery) -> None:
+    """Handle callback queries related to the ChatGPT button."""
+    try:
+        data = query.data
+        chat_id = query.message.chat.id
+        
+        if data.startswith(('free_version_chatgpt', 'premium_version_chatgpt')):
+            show_chatgpt_info(chat_id)
+    except Exception as e:
+        logger.error(f"Ralat mengendalikan callback: {e}")
+
+def show_chatgpt_info(chat_id: int) -> None:
+    """Hantar maklumat tentang cara menggunakan ChatGPT."""
+    try:
+        info_message = (
+            "Untuk berinteraksi dengan ChatGPT, sila gunakan arahan /ask diikuti dengan soalan anda. "
+            "Contohnya:\n\n"
+            "/ask Apakah ibu kota Perancis?\n\n"
+            "Bot akan menghantar soalan anda kepada ChatGPT dan memulangkan responsnya."
+        )
+        app.send_message(chat_id, info_message)
+    except Exception as e:
+        logger.error(f"Ralat memaparkan maklumat ChatGPT: {e}")
+
 @app.on_message(filters.command('start'))
 def handle_start(client: Client, message: "Message") -> None:
     """Tangani arahan /start dan tunjukkan menu utama."""
