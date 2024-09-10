@@ -86,7 +86,7 @@ def handle_start(client: Client, message: Message) -> None:
         )
         
         # Menyediakan markup dengan butang
-        markup = InlineKeyboardMarkup()
+        markup = InlineKeyboardMarkup(row_width=1)
         buttons = [
             InlineKeyboardButton(text='Service', callback_data='service'),
             InlineKeyboardButton(text='Dev Bot', url='https://t.me/abgomey'),
@@ -147,7 +147,7 @@ def handle_query(client: Client, query: CallbackQuery) -> None:
 def show_service_submenu(chat_id: int) -> None:
     """Tunjukkan pilihan submenu di bawah 'Service'."""
     try:
-        markup = InlineKeyboardMarkup()
+        markup = InlineKeyboardMarkup(row_width=1)
         buttons = [
             InlineKeyboardButton(text='Free Version', callback_data='free_version'),
             InlineKeyboardButton(text='Premium Version', callback_data='premium_version')
@@ -160,7 +160,7 @@ def show_service_submenu(chat_id: int) -> None:
 def show_version_submenu(chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah Versi Percuma atau Premium."""
     try:
-        markup = InlineKeyboardMarkup()
+        markup = InlineKeyboardMarkup(row_width=1)
         buttons = [
             InlineKeyboardButton(text='Convert', callback_data=f'{version_type}_convert'),
             InlineKeyboardButton(text='Broadcast', callback_data=f'{version_type}_broadcast'),
@@ -176,7 +176,7 @@ def show_version_submenu(chat_id: int, version_type: str) -> None:
 def show_downloader_submenu(chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'Downloader'."""
     try:
-        markup = InlineKeyboardMarkup()
+        markup = InlineKeyboardMarkup(row_width=1)
         buttons = [
             InlineKeyboardButton(text='FB', callback_data=f'{version_type}_fb'),
             InlineKeyboardButton(text='IG', callback_data=f'{version_type}_ig'),
@@ -192,7 +192,7 @@ def show_downloader_submenu(chat_id: int, version_type: str) -> None:
 def show_convert_submenu(chat_id: int) -> None:
     """Tunjukkan pilihan submenu di bawah 'Convert'."""
     try:
-        markup = InlineKeyboardMarkup()
+        markup = InlineKeyboardMarkup(row_width=1)
         buttons = [
             InlineKeyboardButton(text='Bug Vless', callback_data='bug_vless'),
             InlineKeyboardButton(text='Text to Img', callback_data='text_to_img'),
@@ -209,7 +209,7 @@ def show_convert_submenu(chat_id: int) -> None:
 def show_broadcast_submenu(chat_id: int) -> None:
     """Tunjukkan pilihan submenu di bawah 'Broadcast'."""
     try:
-        markup = InlineKeyboardMarkup()
+        markup = InlineKeyboardMarkup(row_width=1)
         buttons = [
             InlineKeyboardButton(text='Broadcast User', callback_data='broadcast_user'),
             InlineKeyboardButton(text='Broadcast Group', callback_data='broadcast_group'),
@@ -229,7 +229,7 @@ def show_broadcast_submenu(chat_id: int) -> None:
 def show_chatgpt_submenu(chat_id: int) -> None:
     """Tunjukkan pilihan submenu di bawah 'ChatGPT'."""
     try:
-        markup = InlineKeyboardMarkup()
+        markup = InlineKeyboardMarkup(row_width=1)
         buttons = [
             InlineKeyboardButton(text='Generate Response', callback_data='generate_response'),
             InlineKeyboardButton(text='Extract Info', callback_data='extract_info')
