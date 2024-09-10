@@ -148,7 +148,8 @@ def handle_query(client: Client, query: CallbackQuery) -> None:
     except Exception as e:
         logger.error(f"Ralat mengendalikan pertanyaan: {e}")
 
-def show_service_submenu(chat_id: int) -> None:
+@app.on_message(filters.command("service"))
+def show_service_submenu(client, message):
     """Tunjukkan pilihan submenu di bawah 'Service'."""
     try:
         markup = InlineKeyboardMarkup(
@@ -162,12 +163,25 @@ def show_service_submenu(chat_id: int) -> None:
                 ]
             ]
         )
-        app.send_message(chat_id, "Sila pilih versi:", reply_markup=markup)
+        client.send_message(message.chat.id, "Sila pilih versi:", reply_markup=markup)
     except Exception as e:
-        logger.error(f"Ralat memaparkan submenu servis: {e}")
+        print(f"Ralat memaparkan submenu servis: {e}")
 
-def show_version_submenu(chat_id: int, version_type: str) -> None:
-    """Tunjukkan pilihan submenu di bawah Versi Percuma atau Premium."""
+@app.on_callback_query(filters.regex(r'^(free_version|premium_version)$'))
+def handle_version_selection(client, callback_query: CallbackQuery):
+    """Tanggapi pilihan versi dan tunjukkan submenu untuk versi yang dipilih."""
+    version_type = callback_query.data
+    show_version_submenu(client, callback_query.message.chat.id, version_type)
+
+@app.on_callback_query(filters.regex(r'^(free_version|premium_version)_(convert|broadcast|auto_approve|downloader|chatgpt|back_to_service)$'))
+def handle_version_submenu(client, callback_query: CallbackQuery):
+    """Tanggapi pilihan submenu versi dan lakukan tindakan yang sesuai."""
+    data = callback_query.data
+    # Lakukan tindakan berdasarkan callback_data
+    print(f"Pilihan yang dipilih: {data}")
+
+def show_version_submenu(client, chat_id: int, version_type: str) -> None:
+    """Tunjukkan pilihan submenu di bawah Versi Free atau Premium."""
     try:
         markup = InlineKeyboardMarkup(
             inline_keyboard=[
@@ -183,9 +197,9 @@ def show_version_submenu(chat_id: int, version_type: str) -> None:
                 ]
             ]
         )
-        app.send_message(chat_id, f"Sila pilih pilihan untuk {version_type}:", reply_markup=markup)
+        client.send_message(chat_id, f"Sila pilih pilihan untuk {version_type}:", reply_markup=markup)
     except Exception as e:
-        logger.error(f"Ralat memaparkan submenu versi: {e}")
+        print(f"Ralat memaparkan submenu versi: {e}")
 
 def show_downloader_submenu(chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'Downloader'."""
@@ -208,29 +222,29 @@ def show_downloader_submenu(chat_id: int, version_type: str) -> None:
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu downloader: {e}")
 
-def show_convert_submenu(chat_id: int) -> None:
+def show_convert_submenu(chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'Convert'."""
     try:
         markup = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text='Bug Vless', callback_data='bug_vless'),
-                    InlineKeyboardButton(text='Text to Img', callback_data='text_to_img'),
-                    InlineKeyboardButton(text='Img to Text', callback_data='img_to_text'),
-                    InlineKeyboardButton(text='Img to PDF', callback_data='img_to_pdf'),
-                    InlineKeyboardButton(text='PDF to Img', callback_data='pdf_to_img'),
-                    InlineKeyboardButton(text='MP4 to Audio', callback_data='mp4_to_audio')
+                    InlineKeyboardButton(text='Bug Vless', callback_data=f'{version_type}_bug_vless'),
+                    InlineKeyboardButton(text='Text to Img', callback_data=f'{version_type}_text_to_img'),
+                    InlineKeyboardButton(text='Img to Text', callback_data=f'{version_type}_img_to_text'),
+                    InlineKeyboardButton(text='Img to PDF', callback_data=f'{version_type}_img_to_pdf'),
+                    InlineKeyboardButton(text='PDF to Img', callback_data=f'{version_type}_pdf_to_img'),
+                    InlineKeyboardButton(text='MP4 to Audio', callback_data=f'{version_type}_mp4_to_audio')
                 ],
                 [
-                    InlineKeyboardButton(text='Back to Version', callback_data='free_version_version')
+                    InlineKeyboardButton(text='Back to Version', callback_data=f'{version_type}_version')
                 ]
             ]
         )
-        app.send_message(chat_id, "Sila pilih pilihan Convert:", reply_markup=markup)
+        app.send_message(chat_id, f"Sila pilih pilihan Convert {version_type}:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu convert: {e}")
 
-def show_broadcast_submenu(chat_id: int) -> None:
+def show_broadcast_submenu(chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'Broadcast'."""
     try:
         markup = InlineKeyboardMarkup(
@@ -259,7 +273,7 @@ def show_broadcast_submenu(chat_id: int) -> None:
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu broadcast: {e}")
 
-def show_chatgpt_submenu(chat_id: int) -> None:
+def show_chatgpt_submenu(chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'ChatGPT'."""
     try:
         markup = InlineKeyboardMarkup(
