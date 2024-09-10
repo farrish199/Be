@@ -6,10 +6,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from config import TOKEN as TELEGRAM_BOT_TOKEN, ADMIN_USER_ID, ALLOWED_USER_IDS
+from config import TOKEN as TELEGRAM_BOT_TOKEN, API_ID, API_HASH, ADMIN_USER_ID, ALLOWED_USER_IDS
 
 # Initialize Pyrogram Client
-app = Client("broadcast_bot", bot_token=TELEGRAM_BOT_TOKEN)
+app = Client("broadcast_bot", api_id=API_ID, api_hash=API_HASH, bot_token=TELEGRAM_BOT_TOKEN)
 scheduler = BackgroundScheduler()
 scheduler.start()
 
