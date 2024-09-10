@@ -3,6 +3,7 @@ import os
 import json
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Message
+from import
 
 # Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -159,7 +160,7 @@ def show_service_submenu(client, message):
                     InlineKeyboardButton(text='Premium Version', callback_data='premium_version')
                 ],
                 [
-                    InlineKeyboardButton(text='Back to Start', callback_data='back_to_start')
+                    InlineKeyboardButton(text='Back', callback_data='back_to_start')
                 ]
             ]
         )
@@ -193,7 +194,7 @@ def show_version_submenu(client, chat_id: int, version_type: str) -> None:
                     InlineKeyboardButton(text='ChatGPT', callback_data=f'{version_type}_chatgpt')
                 ],
                 [
-                    InlineKeyboardButton(text='Back to Service', callback_data='back_to_service')
+                    InlineKeyboardButton(text='Back', callback_data='back_to_service')
                 ]
             ]
         )
@@ -214,7 +215,7 @@ def show_downloader_submenu(chat_id: int, version_type: str) -> None:
                     InlineKeyboardButton(text='YT', callback_data=f'{version_type}_yt')
                 ],
                 [
-                    InlineKeyboardButton(text='Back to Version', callback_data=f'{version_type}_version')
+                    InlineKeyboardButton(text='Back', callback_data=f'{version_type}_version')
                 ]
             ]
         )
@@ -236,7 +237,7 @@ def show_convert_submenu(chat_id: int, version_type: str) -> None:
                     InlineKeyboardButton(text='MP4 to Audio', callback_data=f'{version_type}_mp4_to_audio')
                 ],
                 [
-                    InlineKeyboardButton(text='Back to Version', callback_data=f'{version_type}_version')
+                    InlineKeyboardButton(text='Back', callback_data=f'{version_type}_version')
                 ]
             ]
         )
@@ -250,26 +251,26 @@ def show_broadcast_submenu(chat_id: int, version_type: str) -> None:
         markup = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text='Broadcast User', callback_data='broadcast_user'),
-                    InlineKeyboardButton(text='Broadcast Group', callback_data='broadcast_group'),
-                    InlineKeyboardButton(text='Broadcast Channel', callback_data='broadcast_channel'),
-                    InlineKeyboardButton(text='Broadcast All', callback_data='broadcast_all')
+                    InlineKeyboardButton(text='Broadcast User', callback_data=f'{version_type}_broadcast_user'),
+                    InlineKeyboardButton(text='Broadcast Group', callback_data=f'{version_type}_broadcast_group'),
+                    InlineKeyboardButton(text='Broadcast Channel', callback_data=f'{version_type}_broadcast_channel'),
+                    InlineKeyboardButton(text='Broadcast All', callback_data=f'{version_type}_broadcast_all')
                 ],
                 [
-                    InlineKeyboardButton(text='Schedule User', callback_data='schedule_user'),
-                    InlineKeyboardButton(text='Schedule Group', callback_data='schedule_group'),
-                    InlineKeyboardButton(text='Schedule Channel', callback_data='schedule_channel'),
-                    InlineKeyboardButton(text='Schedule All', callback_data='schedule_all')
+                    InlineKeyboardButton(text='Schedule User', callback_data=f'{version_type}_schedule_user'),
+                    InlineKeyboardButton(text='Schedule Group', callback_data=f'{version_type}_schedule_group'),
+                    InlineKeyboardButton(text='Schedule Channel', callback_data=f'{version_type}_schedule_channel'),
+                    InlineKeyboardButton(text='Schedule All', callback_data=f'{version_type}_schedule_all')
                 ],
                 [
-                    InlineKeyboardButton(text='List Scheduled Jobs', callback_data='list_scheduled_jobs')
+                    InlineKeyboardButton(text='List Scheduled Jobs', callback_data=f'{version_type}_list_scheduled_jobs')
                 ],
                 [
-                    InlineKeyboardButton(text='Back to Version', callback_data='free_version_version')
+                    InlineKeyboardButton(text='Back', callback_data=f'{version_type}_version')
                 ]
             ]
         )
-        app.send_message(chat_id, "Sila pilih pilihan Broadcast:", reply_markup=markup)
+        app.send_message(chat_id, f"Sila pilih pilihan Broadcast {version_type}:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu broadcast: {e}")
 
@@ -282,7 +283,7 @@ def show_chatgpt_submenu(chat_id: int, version_type: str) -> None:
                     InlineKeyboardButton(text='Use /ask Command', callback_data='use_ask_command')
                 ],
                 [
-                    InlineKeyboardButton(text='Back to Version', callback_data='free_version_version')
+                    InlineKeyboardButton(text='Back', callback_data=f'{version_type}_version')
                 ]
             ]
         )
