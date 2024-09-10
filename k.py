@@ -89,10 +89,10 @@ def handle_start(client: Client, message: Message) -> None:
         markup = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text='Service', callback_data='service'),
-                    InlineKeyboardButton(text='Dev Bot', url='https://t.me/abgomey')
+                    InlineKeyboardButton(text='Service', callback_data='service')
                 ],
                 [
+                    InlineKeyboardButton(text='Dev Bot', url='https://t.me/abgomey'),
                     InlineKeyboardButton(text='Support Bot', url='https://t.me/support_group')  # Gantikan dengan pautan kumpulan sokongan sebenar
                 ]
             ]
@@ -126,23 +126,23 @@ def handle_query(client: Client, query: CallbackQuery) -> None:
         
         if data == 'service':
             show_service_submenu(chat_id)
+        elif data == 'back_to_start':
+            handle_start(client, query.message)
         elif data.endswith('_convert'):
             show_convert_submenu(chat_id)
         elif data.endswith('_broadcast'):
             show_broadcast_submenu(chat_id)
         elif data.endswith('_auto_approve'):
-            # This is to be handled separately, no submenu
+            # Handle Auto Approve option separately if needed
             pass
         elif data.endswith('_downloader'):
             show_downloader_submenu(chat_id, data.split('_')[0])
         elif data.endswith('_chatgpt'):
             show_chatgpt_submenu(chat_id)
-        elif data == 'auto_approve':
-            group_id = get_auto_approve_group_id()
-            if group_id:
-                client.send_message(chat_id, f"Auto Approve diaktifkan untuk kumpulan ID {group_id}.")
-            else:
-                client.send_message(chat_id, "Tiada kumpulan auto approve yang disimpan.")
+        elif data == 'back_to_service':
+            show_service_submenu(chat_id)
+        elif data == 'back_to_version':
+            show_version_submenu(chat_id, data.split('_')[0])
         else:
             client.send_message(chat_id, "Pilihan tidak dikenali.")
     except Exception as e:
@@ -156,6 +156,9 @@ def show_service_submenu(chat_id: int) -> None:
                 [
                     InlineKeyboardButton(text='Free Version', callback_data='free_version'),
                     InlineKeyboardButton(text='Premium Version', callback_data='premium_version')
+                ],
+                [
+                    InlineKeyboardButton(text='Back to Start', callback_data='back_to_start')
                 ]
             ]
         )
@@ -174,6 +177,9 @@ def show_version_submenu(chat_id: int, version_type: str) -> None:
                     InlineKeyboardButton(text='Auto Approve', callback_data=f'{version_type}_auto_approve'),
                     InlineKeyboardButton(text='Downloader', callback_data=f'{version_type}_downloader'),
                     InlineKeyboardButton(text='ChatGPT', callback_data=f'{version_type}_chatgpt')
+                ],
+                [
+                    InlineKeyboardButton(text='Back to Service', callback_data='back_to_service')
                 ]
             ]
         )
@@ -192,6 +198,9 @@ def show_downloader_submenu(chat_id: int, version_type: str) -> None:
                     InlineKeyboardButton(text='TG', callback_data=f'{version_type}_tg'),
                     InlineKeyboardButton(text='TT', callback_data=f'{version_type}_tt'),
                     InlineKeyboardButton(text='YT', callback_data=f'{version_type}_yt')
+                ],
+                [
+                    InlineKeyboardButton(text='Back to Version', callback_data=f'{version_type}_version')
                 ]
             ]
         )
@@ -211,6 +220,9 @@ def show_convert_submenu(chat_id: int) -> None:
                     InlineKeyboardButton(text='Img to PDF', callback_data='img_to_pdf'),
                     InlineKeyboardButton(text='PDF to Img', callback_data='pdf_to_img'),
                     InlineKeyboardButton(text='MP4 to Audio', callback_data='mp4_to_audio')
+                ],
+                [
+                    InlineKeyboardButton(text='Back to Version', callback_data='free_version_version')
                 ]
             ]
         )
@@ -237,6 +249,9 @@ def show_broadcast_submenu(chat_id: int) -> None:
                 ],
                 [
                     InlineKeyboardButton(text='List Scheduled Jobs', callback_data='list_scheduled_jobs')
+                ],
+                [
+                    InlineKeyboardButton(text='Back to Version', callback_data='free_version_version')
                 ]
             ]
         )
@@ -250,27 +265,16 @@ def show_chatgpt_submenu(chat_id: int) -> None:
         markup = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text='Generate Response', callback_data='generate_response'),
-                    InlineKeyboardButton(text='Extract Info', callback_data='extract_info')
+                    InlineKeyboardButton(text='Use /ask Command', callback_data='use_ask_command')
+                ],
+                [
+                    InlineKeyboardButton(text='Back to Version', callback_data='free_version_version')
                 ]
             ]
         )
-        app.send_message(chat_id, "Sila pilih pilihan ChatGPT:", reply_markup=markup)
+        app.send_message(chat_id, "Sila gunakan arahan /ask untuk berinteraksi dengan ChatGPT. \n\nKlik butang di bawah untuk kembali.", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu ChatGPT: {e}")
-
-def show_chatgpt_info(chat_id: int) -> None:
-    """Hantar maklumat tentang cara menggunakan ChatGPT."""
-    try:
-        info_message = (
-            "Untuk berinteraksi dengan ChatGPT, sila gunakan arahan /ask diikuti dengan soalan anda. "
-            "Contohnya:\n\n"
-            "/ask Apakah ibu kota Perancis?\n\n"
-            "Bot akan menghantar soalan anda kepada ChatGPT dan memulangkan responsnya."
-        )
-        app.send_message(chat_id, info_message)
-    except Exception as e:
-        logger.error(f"Ralat memaparkan maklumat ChatGPT: {e}")
 
 if __name__ == "__main__":
     app.run()
