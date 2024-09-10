@@ -7,7 +7,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.date import DateTrigger
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from config import TOKEN as TELEGRAM_BOT_TOKEN, API_ID, API_HASH, ADMIN_BOT_ID, ADMIN_USER_ID
+from config import TOKEN as TELEGRAM_BOT_TOKEN, API_ID, API_HASH, ADMIN_BOT_ID
 
 # Initialize the Pyrogram client
 app = Client("admin_bot", api_id=API_ID, api_hash=API_HASH, bot_token=TELEGRAM_BOT_TOKEN)
@@ -58,10 +58,6 @@ def load_admin_bot_id() -> list:
 def is_admin_bot(user_id: int) -> bool:
     """Check if the user is an admin bot."""
     return user_id == ADMIN_BOT_ID
-
-def is_admin(user_id: int) -> bool:
-    """Check if the user is an admin."""
-    return user_id == ADMIN_USER_ID
 
 def is_freemium(user_id: int) -> bool:
     """Check if the user is a freemium user."""
@@ -176,7 +172,7 @@ def check_user_joined(user_id: int) -> bool:
     
     return False
 
-@app.on_message(filters.command('broadcastfbot') & filters.user(ADMIN_USER_ID))
+@app.on_message(filters.command('broadcastfbot') & filters.user(ADMIN_BOT_ID))
 def broadcast_to_freemium_bots(client: Client, message: Message) -> None:
     """Broadcast message to all freemium bots."""
     if is_admin(message.from_user.id):
@@ -186,7 +182,7 @@ def broadcast_to_freemium_bots(client: Client, message: Message) -> None:
     else:
         client.send_message(message.chat.id, "You do not have permission to use this command.")
 
-@app.on_message(filters.command('broadcastpbot') & filters.user(ADMIN_USER_ID))
+@app.on_message(filters.command('broadcastpbot') & filters.user(ADMIN_BOT_ID))
 def broadcast_to_premium_bots(client: Client, message: Message) -> None:
     """Broadcast message to all premium bots."""
     if is_admin(message.from_user.id):
@@ -197,7 +193,7 @@ def broadcast_to_premium_bots(client: Client, message: Message) -> None:
     else:
         client.send_message(message.chat.id, "You do not have permission to use this command.")
 
-@app.on_message(filters.command('broadcastallbot') & filters.user(ADMIN_USER_ID))
+@app.on_message(filters.command('broadcastallbot') & filters.user(ADMIN_BOT_ID))
 def broadcast_to_all_bots(message_text: str) -> None:
     """Broadcast message to all cloned bots."""
     cloned_bots = load_cloned_bots()
@@ -208,7 +204,7 @@ def broadcast_to_all_bots(message_text: str) -> None:
         except Exception as e:
             print(f"Failed to send message using bot with token {bot_token}: {e}")
 
-@app.on_message(filters.command('schedule_user') & filters.user(ADMIN_USER_ID))
+@app.on_message(filters.command('schedule_user') & filters.user(ADMIN_BOT_ID))
 def handle_schedule_user_broadcast(client: Client, message: Message) -> None:
     """Handle command to schedule broadcasts to all freemium users."""
     if is_admin(message.from_user.id):
@@ -232,7 +228,7 @@ def handle_schedule_user_broadcast(client: Client, message: Message) -> None:
     else:
         client.send_message(message.chat.id, "You do not have permission to schedule broadcasts.")
 
-@app.on_message(filters.command('schedule_group') & filters.user(ADMIN_USER_ID))
+@app.on_message(filters.command('schedule_group') & filters.user(ADMIN_BOT_ID))
 def handle_schedule_group_broadcast(client: Client, message: Message) -> None:
     """Handle command to schedule broadcasts to all freemium groups."""
     if is_admin(message.from_user.id):
@@ -256,7 +252,7 @@ def handle_schedule_group_broadcast(client: Client, message: Message) -> None:
     else:
         client.send_message(message.chat.id, "You do not have permission to schedule broadcasts.")
 
-@app.on_message(filters.command('schedule_channel') & filters.user(ADMIN_USER_ID))
+@app.on_message(filters.command('schedule_channel') & filters.user(ADMIN_BOT_ID))
 def handle_schedule_channel_broadcast(client: Client, message: Message) -> None:
     """Handle command to schedule broadcasts to all freemium channels."""
     if is_admin(message.from_user.id):
@@ -280,7 +276,7 @@ def handle_schedule_channel_broadcast(client: Client, message: Message) -> None:
     else:
         client.send_message(message.chat.id, "You do not have permission to schedule broadcasts.")
 
-@app.on_message(filters.command('schedule_all') & filters.user(ADMIN_USER_ID))
+@app.on_message(filters.command('schedule_all') & filters.user(ADMIN_BOT_ID))
 def handle_schedule_all_broadcast(client: Client, message: Message) -> None:
     """Handle command to schedule broadcasts to all freemium users, groups, and channels."""
     if is_admin(message.from_user.id):
@@ -304,7 +300,7 @@ def handle_schedule_all_broadcast(client: Client, message: Message) -> None:
     else:
         client.send_message(message.chat.id, "You do not have permission to schedule broadcasts.")
 
-@app.on_message(filters.command('list_scheduled') & filters.user(ADMIN_USER_ID))
+@app.on_message(filters.command('list_scheduled') & filters.user(ADMIN_BOT_ID))
 def handle_list_scheduled_jobs(client: Client, message: Message) -> None:
     """Handle command to list all scheduled jobs."""
     if is_admin(message.from_user.id):
@@ -313,7 +309,7 @@ def handle_list_scheduled_jobs(client: Client, message: Message) -> None:
     else:
         client.send_message(message.chat.id, "You do not have permission to use this command.")
 
-@app.on_message(filters.command('cancel_schedule') & filters.user(ADMIN_USER_ID))
+@app.on_message(filters.command('cancel_schedule') & filters.user(ADMIN_BOT_ID))
 def handle_cancel_scheduled_job(client: Client, message: Message) -> None:
     """Handle command to cancel a scheduled job by ID."""
     if is_admin(message.from_user.id):
@@ -326,7 +322,7 @@ def handle_cancel_scheduled_job(client: Client, message: Message) -> None:
     else:
         client.send_message(message.chat.id, "You do not have permission to use this command.")
 
-@app.on_message(filters.command('setjoin') & filters.user(ADMIN_USER_ID))
+@app.on_message(filters.command('setjoin') & filters.user(ADMIN_BOT_ID))
 def handle_set_join(client: Client, message: Message) -> None:
     """Handle command to set a group or channel that users must join to use the bot."""
     if is_admin(message.from_user.id):
@@ -340,7 +336,7 @@ def handle_set_join(client: Client, message: Message) -> None:
     else:
         client.send_message(message.chat.id, "You do not have permission to use this command.")
 
-@app.on_message(filters.private & ~filters.user(ADMIN_USER_ID))
+@app.on_message(filters.private & ~filters.user(ADMIN_BOT_ID))
 def handle_user_not_joined(client: Client, message: Message) -> None:
     """Handle messages from users who have not joined the required group or channel."""
     if not check_user_joined(message.from_user.id):
