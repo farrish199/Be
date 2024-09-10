@@ -59,6 +59,16 @@ def is_admin_bot(user_id: int) -> bool:
     """Check if the user is an admin bot."""
     return user_id == ADMIN_BOT_ID
 
+def list_admin_bot_ids() -> list:
+    """Mengembalikan senarai ID bot admin."""
+    try:
+        # Load senarai bot admin dari fail atau konfigurasi lain
+        admin_bot_ids = load_admin_bot_id()  # Pastikan fungsi ini wujud
+        return admin_bot_ids
+    except Exception as e:
+        print(f"Kesalahan berlaku semasa memuatkan ID bot admin: {e}")
+        return []
+
 def is_freemium(user_id: int) -> bool:
     """Check if the user is a freemium user."""
     user_data = load_user_data()
