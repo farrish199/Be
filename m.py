@@ -30,10 +30,9 @@ from config import TOKEN as TELEGRAM_BOT_TOKEN,API_ID, API_HASH, ADMIN_BOT_ID, A
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-if not TOKEN:
-    logger.error("Token bot Telegram tidak diset dalam pembolehubah persekitaran.")
-    exit(1)
+API_ID = os.getenv("API_ID")
+API_HASH = os.getenv("API_HASH")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 # Get the api id, api hash & telegram bot token from environment variables
 app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=TELEGRAM_BOT_TOKEN)
