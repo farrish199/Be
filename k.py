@@ -86,13 +86,17 @@ def handle_start(client: Client, message: Message) -> None:
         )
         
         # Menyediakan markup dengan butang
-        markup = InlineKeyboardMarkup()
-        buttons = [
-            InlineKeyboardButton(text='Service', callback_data='service'),
-            InlineKeyboardButton(text='Dev Bot', url='https://t.me/abgomey'),
-            InlineKeyboardButton(text='Support Bot', url='https://t.me/support_group')  # Gantikan dengan pautan kumpulan sokongan sebenar
-        ]
-        markup.inline_keyboard = [buttons]  # Ini adalah cara lain untuk menetapkan butang
+        markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text='Service', callback_data='service'),
+                    InlineKeyboardButton(text='Dev Bot', url='https://t.me/abgomey')
+                ],
+                [
+                    InlineKeyboardButton(text='Support Bot', url='https://t.me/support_group')  # Gantikan dengan pautan kumpulan sokongan sebenar
+                ]
+            ]
+        )
         client.send_message(message.chat.id, welcome_message, reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat mengendalikan arahan /start: {e}")
@@ -147,12 +151,14 @@ def handle_query(client: Client, query: CallbackQuery) -> None:
 def show_service_submenu(chat_id: int) -> None:
     """Tunjukkan pilihan submenu di bawah 'Service'."""
     try:
-        markup = InlineKeyboardMarkup()
-        buttons = [
-            InlineKeyboardButton(text='Free Version', callback_data='free_version'),
-            InlineKeyboardButton(text='Premium Version', callback_data='premium_version')
-        ]
-        markup.inline_keyboard = [buttons]
+        markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text='Free Version', callback_data='free_version'),
+                    InlineKeyboardButton(text='Premium Version', callback_data='premium_version')
+                ]
+            ]
+        )
         app.send_message(chat_id, "Sila pilih versi:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu servis: {e}")
@@ -160,15 +166,17 @@ def show_service_submenu(chat_id: int) -> None:
 def show_version_submenu(chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah Versi Percuma atau Premium."""
     try:
-        markup = InlineKeyboardMarkup()
-        buttons = [
-            InlineKeyboardButton(text='Convert', callback_data=f'{version_type}_convert'),
-            InlineKeyboardButton(text='Broadcast', callback_data=f'{version_type}_broadcast'),
-            InlineKeyboardButton(text='Auto Approve', callback_data=f'{version_type}_auto_approve'),
-            InlineKeyboardButton(text='Downloader', callback_data=f'{version_type}_downloader'),
-            InlineKeyboardButton(text='ChatGPT', callback_data=f'{version_type}_chatgpt')
-        ]
-        markup.inline_keyboard = [buttons]
+        markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text='Convert', callback_data=f'{version_type}_convert'),
+                    InlineKeyboardButton(text='Broadcast', callback_data=f'{version_type}_broadcast'),
+                    InlineKeyboardButton(text='Auto Approve', callback_data=f'{version_type}_auto_approve'),
+                    InlineKeyboardButton(text='Downloader', callback_data=f'{version_type}_downloader'),
+                    InlineKeyboardButton(text='ChatGPT', callback_data=f'{version_type}_chatgpt')
+                ]
+            ]
+        )
         app.send_message(chat_id, f"Sila pilih pilihan untuk {version_type}:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu versi: {e}")
@@ -176,15 +184,17 @@ def show_version_submenu(chat_id: int, version_type: str) -> None:
 def show_downloader_submenu(chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'Downloader'."""
     try:
-        markup = InlineKeyboardMarkup()
-        buttons = [
-            InlineKeyboardButton(text='FB', callback_data=f'{version_type}_fb'),
-            InlineKeyboardButton(text='IG', callback_data=f'{version_type}_ig'),
-            InlineKeyboardButton(text='TG', callback_data=f'{version_type}_tg'),
-            InlineKeyboardButton(text='TT', callback_data=f'{version_type}_tt'),
-            InlineKeyboardButton(text='YT', callback_data=f'{version_type}_yt')
-        ]
-        markup.inline_keyboard = [buttons]
+        markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text='FB', callback_data=f'{version_type}_fb'),
+                    InlineKeyboardButton(text='IG', callback_data=f'{version_type}_ig'),
+                    InlineKeyboardButton(text='TG', callback_data=f'{version_type}_tg'),
+                    InlineKeyboardButton(text='TT', callback_data=f'{version_type}_tt'),
+                    InlineKeyboardButton(text='YT', callback_data=f'{version_type}_yt')
+                ]
+            ]
+        )
         app.send_message(chat_id, f"Sila pilih pilihan Downloader untuk {version_type}:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu downloader: {e}")
@@ -192,16 +202,18 @@ def show_downloader_submenu(chat_id: int, version_type: str) -> None:
 def show_convert_submenu(chat_id: int) -> None:
     """Tunjukkan pilihan submenu di bawah 'Convert'."""
     try:
-        markup = InlineKeyboardMarkup()
-        buttons = [
-            InlineKeyboardButton(text='Bug Vless', callback_data='bug_vless'),
-            InlineKeyboardButton(text='Text to Img', callback_data='text_to_img'),
-            InlineKeyboardButton(text='Img to Text', callback_data='img_to_text'),
-            InlineKeyboardButton(text='Img to PDF', callback_data='img_to_pdf'),
-            InlineKeyboardButton(text='PDF to Img', callback_data='pdf_to_img'),
-            InlineKeyboardButton(text='MP4 to Audio', callback_data='mp4_to_audio')
-        ]
-        markup.inline_keyboard = [buttons]
+        markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text='Bug Vless', callback_data='bug_vless'),
+                    InlineKeyboardButton(text='Text to Img', callback_data='text_to_img'),
+                    InlineKeyboardButton(text='Img to Text', callback_data='img_to_text'),
+                    InlineKeyboardButton(text='Img to PDF', callback_data='img_to_pdf'),
+                    InlineKeyboardButton(text='PDF to Img', callback_data='pdf_to_img'),
+                    InlineKeyboardButton(text='MP4 to Audio', callback_data='mp4_to_audio')
+                ]
+            ]
+        )
         app.send_message(chat_id, "Sila pilih pilihan Convert:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu convert: {e}")
@@ -209,19 +221,25 @@ def show_convert_submenu(chat_id: int) -> None:
 def show_broadcast_submenu(chat_id: int) -> None:
     """Tunjukkan pilihan submenu di bawah 'Broadcast'."""
     try:
-        markup = InlineKeyboardMarkup()
-        buttons = [
-            InlineKeyboardButton(text='Broadcast User', callback_data='broadcast_user'),
-            InlineKeyboardButton(text='Broadcast Group', callback_data='broadcast_group'),
-            InlineKeyboardButton(text='Broadcast Channel', callback_data='broadcast_channel'),
-            InlineKeyboardButton(text='Broadcast All', callback_data='broadcast_all'),
-            InlineKeyboardButton(text='Schedule User', callback_data='schedule_user'),
-            InlineKeyboardButton(text='Schedule Group', callback_data='schedule_group'),
-            InlineKeyboardButton(text='Schedule Channel', callback_data='schedule_channel'),
-            InlineKeyboardButton(text='Schedule All', callback_data='schedule_all'),
-            InlineKeyboardButton(text='List Scheduled Jobs', callback_data='list_scheduled_jobs')
-        ]
-        markup.inline_keyboard = [buttons]
+        markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text='Broadcast User', callback_data='broadcast_user'),
+                    InlineKeyboardButton(text='Broadcast Group', callback_data='broadcast_group'),
+                    InlineKeyboardButton(text='Broadcast Channel', callback_data='broadcast_channel'),
+                    InlineKeyboardButton(text='Broadcast All', callback_data='broadcast_all')
+                ],
+                [
+                    InlineKeyboardButton(text='Schedule User', callback_data='schedule_user'),
+                    InlineKeyboardButton(text='Schedule Group', callback_data='schedule_group'),
+                    InlineKeyboardButton(text='Schedule Channel', callback_data='schedule_channel'),
+                    InlineKeyboardButton(text='Schedule All', callback_data='schedule_all')
+                ],
+                [
+                    InlineKeyboardButton(text='List Scheduled Jobs', callback_data='list_scheduled_jobs')
+                ]
+            ]
+        )
         app.send_message(chat_id, "Sila pilih pilihan Broadcast:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu broadcast: {e}")
@@ -229,12 +247,14 @@ def show_broadcast_submenu(chat_id: int) -> None:
 def show_chatgpt_submenu(chat_id: int) -> None:
     """Tunjukkan pilihan submenu di bawah 'ChatGPT'."""
     try:
-        markup = InlineKeyboardMarkup()
-        buttons = [
-            InlineKeyboardButton(text='Generate Response', callback_data='generate_response'),
-            InlineKeyboardButton(text='Extract Info', callback_data='extract_info')
-        ]
-        markup.inline_keyboard = [buttons]
+        markup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text='Generate Response', callback_data='generate_response'),
+                    InlineKeyboardButton(text='Extract Info', callback_data='extract_info')
+                ]
+            ]
+        )
         app.send_message(chat_id, "Sila pilih pilihan ChatGPT:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu ChatGPT: {e}")
