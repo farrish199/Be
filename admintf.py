@@ -55,6 +55,10 @@ def load_admin_bot_id() -> list:
             return config_data.get('admin_bot_id', [])
     return []
 
+def is_admin_bot(user_id: int) -> bool:
+    """Check if the user is an admin bot."""
+    return user_id == ADMIN_BOT_ID
+
 def is_admin(user_id: int) -> bool:
     """Check if the user is an admin."""
     return user_id == ADMIN_USER_ID
