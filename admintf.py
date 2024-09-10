@@ -166,7 +166,7 @@ def check_user_joined(user_id: int) -> bool:
             # For channels, we need a different approach
             # Check if user is following the channel (only possible with user bots)
             try:
-                response = requests.get(f'https://api.telegram.org/bot{BOT_TOKEN}/getChatMember', params={
+                response = requests.get(f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/getChatMember', params={
                     'chat_id': group_or_channel_id,
                     'user_id': user_id
                 })
