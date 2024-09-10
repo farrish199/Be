@@ -197,6 +197,17 @@ def broadcast_to_premium_bots(client: Client, message: Message) -> None:
     else:
         client.send_message(message.chat.id, "You do not have permission to use this command.")
 
+@app.on_message(filters.command('broadcastallbot') & filters.user(ADMIN_USER_ID))
+def broadcast_to_all_bots(message_text: str) -> None:
+    """Broadcast message to all cloned bots."""
+    cloned_bots = load_cloned_bots()
+    for bot_token in cloned_bots:
+        try:
+            bot_client = Client("bot_instance", api_id=API_ID, api_hash=API_HASH, bot_token=bot_token)
+            bot_client.send_message(chat_id=bot_id, text=message_text)
+        except Exception as e:
+            print(f"Failed to send message using bot with token {bot_token}: {e}")
+
 @app.on_message(filters.command('schedule_user') & filters.user(ADMIN_USER_ID))
 def handle_schedule_user_broadcast(client: Client, message: Message) -> None:
     """Handle command to schedule broadcasts to all freemium users."""
