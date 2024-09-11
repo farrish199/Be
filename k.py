@@ -3,7 +3,7 @@ import os
 import json
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Message
-from chatgpt import generate_chatgpt_response, extract_info_from_text, handle_message
+from chatgpt import generate_chatgpt_response, extract_info_from_text
 
 # Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -32,19 +32,19 @@ def save_user_data(user_id: int) -> None:
     except Exception as e:
         logger.error(f"Ralat menyimpan data pengguna: {e}")
 
-def save_auto_approve_grocha_id(grocha_id: int) -> None:
+def save_auto_approve_group_id(group_id: int) -> None:
     """Simpan ID group/channel untuk kelulusan automatik."""
     try:
-        with open('auto_approve_grocha_id.txt', 'w') as f:
-            f.write(str(grocha_id))
+        with open('auto_approve_group_id.txt', 'w') as f:
+            f.write(str(group_id))
     except Exception as e:
         logger.error(f"Ralat menyimpan ID group/channel auto approve: {e}")
 
-def get_auto_approve_grocha_id() -> int:
+def get_auto_approve_group_id() -> int:
     """Muatkan ID kumpulan dari fail."""
     try:
-        if os.path.exists('auto_approve_grocha_id.txt'):
-            with open('auto_approve_grocha_id.txt', 'r') as f:
+        if os.path.exists('auto_approve_group_id.txt'):
+            with open('auto_approve_group_id.txt', 'r') as f:
                 return int(f.read().strip())
         return 0
     except Exception as e:
@@ -58,13 +58,13 @@ def handle_new_chat_member(client: Client, message: Message) -> None:
         if message.new_chat_members:
             for member in message.new_chat_members:
                 if member.id == client.get_me().id:
-                    grocha_id = message.chat.id
-                    save_auto_approve_grocha_id(grocha_id)
-                    client.send_message(grocha_id, "Auto Approve kini diaktifkan untuk group/channel ini.")
+                    group_id = message.chat.id
+                    save_auto_approve_group_id(group_id)
+                    client.send_message(group_id, "Auto Approve kini diaktifkan untuk group/channel ini.")
                     break
 
-        grocha_id = get_auto_approve_grocha_id()
-        if grocha_id and message.chat.id == grocha_id:
+        group_id = get_auto_approve_group_id()
+        if group_id and message.chat.id == group_id:
             client.approve_chat_join_request(message.chat.id, message.from_user.id)
     except Exception as e:
         logger.error(f"Ralat mengendalikan ahli baru: {e}")
@@ -126,19 +126,19 @@ def handle_query(client: Client, query: CallbackQuery) -> None:
         chat_id = query.message.chat.id
         
         if data == 'service':
-            show_service_submenu(chat_id)
+            show_service_submenu(client, query.message)
         elif data == 'back_to_start':
             handle_start(client, query.message)
         elif data.endswith('_convert'):
-            show_convert_submenu(chat_id)
+            show_convert_submenu(chat_id, data.split('_')[0])
         elif data.endswith('_broadcast'):
-            show_broadcast_submenu(chat_id)
+            show_broadcast_submenu(chat_id, data.split('_')[0])
         elif data.endswith('_auto_approve'):
-            show_auto_approve_submenu(chat_id)
+            show_auto_approve_submenu(chat_id, data.split('_')[0])
         elif data.endswith('_downloader'):
             show_downloader_submenu(chat_id, data.split('_')[0])
         elif data.endswith('_chatgpt'):
-            show_chatgpt_submenu(chat_id)
+            show_chatgpt_submenu(chat_id, data.split('_')[0])
         elif data == 'back_to_version':
             show_version_submenu(chat_id, data.split('_')[0])
         else:
@@ -147,7 +147,7 @@ def handle_query(client: Client, query: CallbackQuery) -> None:
         logger.error(f"Ralat mengendalikan pertanyaan: {e}")
 
 @app.on_message(filters.command("service"))
-def show_service_submenu(client, message):
+def show_service_submenu(client: Client, message: Message) -> None:
     """Tunjukkan pilihan submenu di bawah 'Service'."""
     try:
         markup = InlineKeyboardMarkup(
@@ -163,22 +163,28 @@ def show_service_submenu(client, message):
         )
         client.send_message(message.chat.id, "Sila pilih versi:", reply_markup=markup)
     except Exception as e:
-        print(f"Ralat memaparkan submenu servis: {e}")
+        logger.error(f"Ralat memaparkan submenu servis: {e}")
 
 @app.on_callback_query(filters.regex(r'^(free_version|premium_version)$'))
-def handle_version_selection(client, callback_query: CallbackQuery):
+def handle_version_selection(client: Client, callback_query: CallbackQuery) -> None:
     """Tanggapi pilihan versi dan tunjukkan submenu untuk versi yang dipilih."""
-    version_type = callback_query.data
-    show_version_submenu(client, callback_query.message.chat.id, version_type)
+    try:
+        version_type = callback_query.data
+        show_version_submenu(client, callback_query.message.chat.id, version_type)
+    except Exception as e:
+        logger.error(f"Ralat memaparkan submenu versi: {e}")
 
 @app.on_callback_query(filters.regex(r'^(free_version|premium_version)_(convert|broadcast|auto_approve|downloader|chatgpt|back_to_service)$'))
-def handle_version_submenu(client, callback_query: CallbackQuery):
+def handle_version_submenu(client: Client, callback_query: CallbackQuery) -> None:
     """Tanggapi pilihan submenu versi dan lakukan tindakan yang sesuai."""
-    data = callback_query.data
-    # Lakukan tindakan berdasarkan callback_data
-    print(f"Pilihan yang dipilih: {data}")
+    try:
+        data = callback_query.data
+        # Lakukan tindakan berdasarkan callback_data
+        print(f"Pilihan yang dipilih: {data}")
+    except Exception as e:
+        logger.error(f"Ralat memaparkan submenu versi: {e}")
 
-def show_version_submenu(client, chat_id: int, version_type: str) -> None:
+def show_version_submenu(client: Client, chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah Versi Free atau Premium."""
     try:
         markup = InlineKeyboardMarkup(
@@ -197,9 +203,9 @@ def show_version_submenu(client, chat_id: int, version_type: str) -> None:
         )
         client.send_message(chat_id, f"Sila pilih pilihan untuk {version_type}:", reply_markup=markup)
     except Exception as e:
-        print(f"Ralat memaparkan submenu versi: {e}")
+        logger.error(f"Ralat memaparkan submenu versi: {e}")
 
-def show_downloader_submenu(chat_id: int, version_type: str) -> None:
+def show_downloader_submenu(client: Client, chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'Downloader'."""
     try:
         markup = InlineKeyboardMarkup(
@@ -216,11 +222,11 @@ def show_downloader_submenu(chat_id: int, version_type: str) -> None:
                 ]
             ]
         )
-        app.send_message(chat_id, f"Sila pilih pilihan Downloader untuk {version_type}:", reply_markup=markup)
+        client.send_message(chat_id, f"Sila pilih pilihan Downloader untuk {version_type}:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu downloader: {e}")
 
-def show_convert_submenu(chat_id: int, version_type: str) -> None:
+def show_convert_submenu(client: Client, chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'Convert'."""
     try:
         markup = InlineKeyboardMarkup(
@@ -238,11 +244,11 @@ def show_convert_submenu(chat_id: int, version_type: str) -> None:
                 ]
             ]
         )
-        app.send_message(chat_id, f"Sila pilih pilihan Convert {version_type}:", reply_markup=markup)
+        client.send_message(chat_id, f"Sila pilih pilihan Convert {version_type}:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu convert: {e}")
 
-def show_broadcast_submenu(chat_id: int, version_type: str) -> None:
+def show_broadcast_submenu(client: Client, chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'Broadcast'."""
     try:
         markup = InlineKeyboardMarkup(
@@ -267,11 +273,11 @@ def show_broadcast_submenu(chat_id: int, version_type: str) -> None:
                 ]
             ]
         )
-        app.send_message(chat_id, f"Sila pilih pilihan Broadcast {version_type}:", reply_markup=markup)
+        client.send_message(chat_id, f"Sila pilih pilihan Broadcast {version_type}:", reply_markup=markup)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu broadcast: {e}")
 
-def show_auto_approve_submenu(chat_id: int, version_type: str) -> None:
+def show_auto_approve_submenu(client: Client, chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'Auto Approve' dengan hanya butang 'Back'."""
     try:
         markup = InlineKeyboardMarkup(
@@ -281,7 +287,7 @@ def show_auto_approve_submenu(chat_id: int, version_type: str) -> None:
                 ]
             ]
         )
-        app.send_message(
+        client.send_message(
             chat_id, 
             "Untuk mengaktifkan fungsi auto approve, tambahkan bot ke dalam group atau channel sebagai admin. \n\nKlik butang di bawah untuk kembali.", 
             reply_markup=markup
@@ -289,7 +295,7 @@ def show_auto_approve_submenu(chat_id: int, version_type: str) -> None:
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu Auto Approve: {e}")
 
-def show_chatgpt_submenu(chat_id: int, version_type: str) -> None:
+def show_chatgpt_submenu(client: Client, chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'ChatGPT' dengan hanya butang 'Back'."""
     try:
         markup = InlineKeyboardMarkup(
@@ -299,12 +305,13 @@ def show_chatgpt_submenu(chat_id: int, version_type: str) -> None:
                 ]
             ]
         )
-        app.send_message(
+        client.send_message(
             chat_id, 
             "Sila gunakan arahan /ask untuk berinteraksi dengan ChatGPT. \n\nKlik butang di bawah untuk kembali.", 
             reply_markup=markup
         )
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu ChatGPT: {e}")
+
 if __name__ == "__main__":
     app.run()
