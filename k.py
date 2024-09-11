@@ -1,4 +1,4 @@
-import logging
+Ftimport logging
 import os
 import json
 from pyrogram import Client, filters
@@ -125,16 +125,6 @@ def handle_version_selection(client: Client, callback_query: CallbackQuery) -> N
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu versi: {e}")
 
-@app.on_callback_query(filters.regex(r'^(free_version|premium_version)_(convert|broadcast|auto_approve|downloader|chatgpt|back_to_service)$'))
-def handle_version_submenu(client: Client, callback_query: CallbackQuery) -> None:
-    """Tanggapi pilihan submenu versi dan lakukan tindakan yang sesuai."""
-    try:
-        data = callback_query.data
-        # Lakukan tindakan berdasarkan callback_data
-        print(f"Pilihan yang dipilih: {data}")
-    except Exception as e:
-        logger.error(f"Ralat memaparkan submenu versi: {e}")
-
 def show_version_submenu(client: Client, chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah Versi Free atau Premium."""
     try:
@@ -153,6 +143,32 @@ def show_version_submenu(client: Client, chat_id: int, version_type: str) -> Non
             ]
         )
         client.send_message(chat_id, f"Sila pilih pilihan untuk {version_type}:", reply_markup=markup)
+    except Exception as e:
+        logger.error(f"Ralat memaparkan submenu versi: {e}")
+
+@app.on_callback_query(filters.regex(r'^(free_version|premium_version)_(convert|broadcast|auto_approve|downloader|chatgpt|back_to_service)$'))
+def handle_version_submenu(client: Client, callback_query: CallbackQuery) -> None:
+    """Tanggapi pilihan submenu versi dan lakukan tindakan yang sesuai."""
+    try:
+        data = callback_query.data
+        version_type, feature = data.split('_', 1)
+        
+        feature_function_map = {
+            'convert': show_convert_submenu,
+            'broadcast': show_broadcast_submenu,
+            'auto_approve': show_auto_approve_submenu,
+            'downloader': show_downloader_submenu,
+            'chatgpt': show_chatgpt_submenu
+        }
+        
+        feature_function_map.get(feature, lambda *args: None)(client, callback_query.message.chat.id, version_type)
+        
+        # Update usage for free version features
+        if version_type == 'free_version':
+            if not check_daily_limit(callback_query.from_user.id, feature, version_type):
+                client.send_message(callback_query.message.chat.id, "Anda telah melebihi had harian untuk fungsi ini.")
+                return
+            update_daily_usage(callback_query.from_user.id, feature)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu versi: {e}")
 
