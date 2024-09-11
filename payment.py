@@ -1,8 +1,25 @@
+import json
+import os
+import random
+import string
+import requests
+import logging
+from datetime import datetime, timedelta
+from typing import Dict, Optional
+
+# Konfigurasi logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Kunci rahsia ToyyibPay anda
+TOYYIBPAY_SECRET_KEY = 'YOUR_TOYYIBPAY_SECRET_KEY'  # Gantikan dengan kunci rahsia anda
+
+def generate_random_string(length=8) -> str:
     """Generate a random string of fixed length."""
     letters = string.ascii_letters + string.digits
-    return ''.join(random.choice(letters) for i in range(length))
+    return ''.join(random.choice(letters) for _ in range(length))
 
-def create_category() -> str:
+def create_category() -> Optional[str]:
     """Create a category in ToyyibPay and return the category code."""
     category_name = f"Telegram Payment for {generate_random_string()}"
     category_description = "Payment for bot services"
@@ -17,12 +34,16 @@ def create_category() -> str:
         response = requests.post('https://toyyibpay.com/index.php/api/createCategory', data=payload)
         response.raise_for_status()
         data = response.json()
-        return data[0]['CategoryCode']
+        if data and isinstance(data, list):
+            return data[0].get('CategoryCode')
+        else:
+            logger.error("Unexpected response format for category creation.")
+            return None
     except requests.RequestException as e:
         logger.error(f"Category creation failed: {e}")
         return None
 
-def create_bill(category_code: str, user_id: int, price_code: int, item_name: str) -> str:
+def create_bill(category_code: str, user_id: int, price_code: int, item_name: str) -> Optional[str]:
     """Create a bill in ToyyibPay and return the payment URL."""
     bill_amount = price_code
     bill_name = generate_random_string(10)
@@ -54,13 +75,40 @@ def create_bill(category_code: str, user_id: int, price_code: int, item_name: st
         response = requests.post('https://toyyibpay.com/index.php/api/createBill', data=payload)
         response.raise_for_status()
         data = response.json()
-        bill_code = data[0]['BillCode']
-        return f"https://toyyibpay.com/{bill_code}"
+        if data and isinstance(data, list):
+            bill_code = data[0].get('BillCode')
+            if bill_code:
+                return f"https://toyyibpay.com/{bill_code}"
+            else:
+                logger.error("Bill code not found in response.")
+                return None
+        else:
+            logger.error("Unexpected response format for bill creation.")
+            return None
     except requests.RequestException as e:
         logger.error(f"Bill creation failed: {e}")
         return None
 
-def process_payment(client: Client, message: types.Message) -> None:
+def load_user_data() -> Dict[int, Dict[str, str]]:
+    """Load user data from file."""
+    if os.path.exists('userpaid_data.json'):
+        with open('userpaid_data.json', 'r') as file:
+            try:
+                return json.load(file)
+            except json.JSONDecodeError as e:
+                print(f"Error decoding JSON from file: {e}")
+                return {}
+    return {}
+
+def save_user_data(user_data: Dict[int, Dict[str, str]]) -> None:
+    """Save user data to file."""
+    try:
+        with open('userpaid_data.json', 'w') as file:
+            json.dump(user_data, file, indent=4)
+    except IOError as e:
+        print(f"Error writing to file: {e}")
+
+def process_payment(client: 'Client', message: 'types.Message') -> None:
     """Create a payment invoice and send the payment link to the user."""
     user_id = message.from_user.id
     
@@ -69,7 +117,7 @@ def process_payment(client: Client, message: types.Message) -> None:
         client.send_message(message.chat.id, "Failed to create payment category. Please try again later.")
         return
     
-    price_code = 500  # Example: RM5
+    price_code = 1000  # Example: RM10 (in cents)
     item_name = "premium_access"
     
     payment_url = create_bill(category_code, user_id, price_code, item_name)
@@ -78,13 +126,19 @@ def process_payment(client: Client, message: types.Message) -> None:
     else:
         client.send_message(message.chat.id, "Failed to create payment link. Please try again later.")
 
-def payment_callback(request: requests.Request) -> None:
+def payment_callback(request: 'requests.Request') -> None:
     """Handle payment callback and update user status."""
     try:
         data = request.json()
         bill_code = data.get('billcode')
         status = data.get('status')
-        user_id = int(data.get('order_id').split('_')[0])
+        order_id = data.get('order_id')
+        
+        if not order_id:
+            logger.error("Order ID missing in callback.")
+            return
+        
+        user_id = int(order_id.split('_')[0])
         
         if status == '1':  # Success
             user_data = load_user_data()
@@ -97,3 +151,4 @@ def payment_callback(request: requests.Request) -> None:
             client.send_message(user_id, "Payment failed. Please try again.")
     except Exception as e:
         logger.error(f"Payment callback handling failed: {e}")
+
