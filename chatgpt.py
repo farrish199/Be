@@ -30,9 +30,3 @@ def extract_info_from_text(text: str) -> dict:
     prompt = f"Extract the key information from the following text:\n\n{text}"
     response = generate_chatgpt_response(prompt)
     return {"extracted_info": response}
-
-def handle_message(client: Client, message: types.Message) -> None:
-    """Handle incoming messages and respond using ChatGPT."""
-    if message.text:
-        response = generate_chatgpt_response(message.text)
-        client.send_message(message.chat.id, response)
