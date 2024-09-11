@@ -1,8 +1,20 @@
 {
-    "5597816302": {
-        "user_id": 5597816302
+    "123456789": {
+        "user_id": 123456789,
+        "version": "free_version",
+        "free_version_convert": 0,
+        "free_version_broadcast": 0,
+        "free_version_auto_approve": 0,
+        "free_version_downloader": 0,
+        "free_version_chatgpt": 0
     },
-    "67890": {
-        "user_id": 67890
+    "987654321": {
+        "user_id": 987654321,
+        "version": "premium_version",
+        "premium_version_convert": 0,
+        "premium_version_broadcast": 0,
+        "premium_version_auto_approve": 0,
+        "premium_version_downloader": 0,
+        "premium_version_chatgpt": 0
     }
 }
