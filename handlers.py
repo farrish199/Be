@@ -63,25 +63,6 @@ def handle_conversion(client: Client, message: types.Message) -> None:
     else:
         client.send_message(message.chat.id, "Invalid URL format. Please send a valid vless URL.")
 
-def start(client: Client, message: types.Message) -> None:
-    """Handle /start command."""
-    client.send_message(
-        message.chat.id,
-        (
-            "===================================\nBot MF By IMMANVPN\n\n"
-            "Hi! Saya adalah bot yang dapat membantu anda dalam beberapa hal "
-            "yang dapat memudahkan kerja anda!\n\nSaya mempunyai beberapa fungsi "
-            "menarik yang dapat anda gunakan!\n\nJom Explore fungsi yang ada pada saya.\n"
-            "==================================="
-        ),
-        reply_markup=get_main_keyboard()
-    )
-
-def button(client: Client, query: types.CallbackQuery) -> None:
-    """Handle callback queries from inline buttons."""
-    client.answer_callback_query(query.id)
-    client.edit_message_text(f"Selected option: {query.data}", chat_id=query.message.chat.id, message_id=query.message.message_id)
-
 def set_admin_id(client: Client, message: types.Message) -> None:
     """Set a new admin ID."""
     user_id = message.from_user.id
