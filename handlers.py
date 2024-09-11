@@ -13,28 +13,23 @@ from keyboards import get_main_keyboard, get_submenu_keyboard, get_conversion_ke
 
 logger = logging.getLogger(__name__)
 
-def is_user_allowed(user_id: int) -> bool:
-    """Check if the user is allowed to use the bot."""
-    return user_id == ADMIN_USER_ID or user_id in ALLOWED_USER_IDS
+@app.on_message(filters.new_chat_members)
+def handle_new_chat_member(client: Client, message: Message) -> None:
+    """Tangani ahli baru yang menyertai group/channel dan luluskan mereka secara automatik."""
+    try:
+        if message.new_chat_members:
+            for member in message.new_chat_members:
+                if member.id == client.get_me().id:
+                    group_id = message.chat.id
+                    save_auto_approve_group_id(group_id)
+                    client.send_message(group_id, "Auto Approve kini diaktifkan untuk group/channel ini.")
+                    break
 
-def is_user_paid(user_id: int) -> bool:
-    """Check if the user has paid to access the bot."""
-    user_data = load_user_data()
-    return (user_id in user_data and
-            user_data[user_id].get("subscription_end") and
-            datetime.fromisoformat(user_data[user_id]["subscription_end"]) > datetime.now())
-
-def load_user_data() -> dict:
-    """Load user data from file."""
-    if os.path.exists('user_data.json'):
-        with open('user_data.json', 'r') as file:
-            return json.load(file)
-    return {}
-
-def save_user_data(user_data: dict) -> None:
-    """Save user data to file."""
-    with open('user_data.json', 'w') as file:
-        json.dump(user_data, file, indent=4)
+        group_id = get_auto_approve_group_id()
+        if group_id and message.chat.id == group_id:
+            client.approve_chat_join_request(message.chat.id, message.from_user.id)
+    except Exception as e:
+        logger.error(f"Ralat mengendalikan ahli baru: {e}")
 
 def extract_info_from_text(user_text: str) -> tuple:
     """Extract UUID, subdomain, and name from a full vless URL."""
