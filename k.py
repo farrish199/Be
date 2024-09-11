@@ -1,4 +1,4 @@
-Ftimport logging
+import logging
 import os
 import json
 from pyrogram import Client, filters
