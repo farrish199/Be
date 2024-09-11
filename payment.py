@@ -1,43 +1,99 @@
-def create_payment_link(amount: float, description: str, user_id: int) -> str:
-    """Create a payment link using ToyyibPay."""
-    headers = {
-        'Authorization': f'Bearer {TOYYIBPAY_API_KEY}',
-        'Content-Type': 'application/json'
-    }
+    """Generate a random string of fixed length."""
+    letters = string.ascii_letters + string.digits
+    return ''.join(random.choice(letters) for i in range(length))
+
+def create_category() -> str:
+    """Create a category in ToyyibPay and return the category code."""
+    category_name = f"Telegram Payment for {generate_random_string()}"
+    category_description = "Payment for bot services"
+    
     payload = {
-        'amount': amount,
-        'description': description,
-        'redirect_url': f'https://yourdomain.com/payment_success?user_id={user_id}'
+        'catname': category_name,
+        'catdescription': category_description,
+        'userSecretKey': TOYYIBPAY_SECRET_KEY
     }
-    response = requests.post(f'{TOYYIBPAY_URL}/create_payment_link', headers=headers, json=payload)
-    data = response.json()
-    if response.status_code == 200:
-        return data['payment_link']
-    else:
-        logger.error(f"ToyyibPay error: {data.get('message')}")
-        return ""
-
-def verify_payment(transaction_id: str) -> bool:
-    """Verify payment with ToyyibPay."""
-    headers = {
-        'Authorization': f'Bearer {TOYYIBPAY_SECRET_KEY}',
-        'Content-Type': 'application/json'
-    }
-    response = requests.get(f'{TOYYIBPAY_URL}/verify_payment/{transaction_id}', headers=headers)
-    data = response.json()
-    return data.get('status') == 'success'
-
-@app.on_message(filters.command("payment_success"))
-def handle_payment_success(client: Client, message: Message) -> None:
-    """Handle successful payment notification."""
+    
     try:
-        user_id = int(message.text.split('user_id=')[1].strip())
-        transaction_id = message.text.split('transaction_id=')[1].strip()
+        response = requests.post('https://toyyibpay.com/index.php/api/createCategory', data=payload)
+        response.raise_for_status()
+        data = response.json()
+        return data[0]['CategoryCode']
+    except requests.RequestException as e:
+        logger.error(f"Category creation failed: {e}")
+        return None
+
+def create_bill(category_code: str, user_id: int, price_code: int, item_name: str) -> str:
+    """Create a bill in ToyyibPay and return the payment URL."""
+    bill_amount = price_code
+    bill_name = generate_random_string(10)
+    bill_description = f"Bill for {user_id}"
+    order_id = f"{user_id}_{bill_name}_{item_name}"
+    
+    payload = {
+        'userSecretKey': TOYYIBPAY_SECRET_KEY,
+        'categoryCode': category_code,
+        'billName': bill_name,
+        'billDescription': bill_description,
+        'billPriceSetting': 1,
+        'billPayorInfo': 1,
+        'billAmount': bill_amount,
+        'billReturnUrl': 'https://yourdomain.com/payment_return',
+        'billCallbackUrl': 'https://yourdomain.com/payment_callback',
+        'billExternalReferenceNo': order_id,
+        'billTo': '',
+        'billEmail': '',  # Add user email if needed
+        'billPhone': '',  # Add user phone number if needed
+        'billSplitPayment': 0,
+        'billPaymentChannel': '0',
+        'billContentEmail': 'Thank you for purchasing!',
+        'billChargeToCustomer': 1,
+        'billExpiryDays': 1
+    }
+    
+    try:
+        response = requests.post('https://toyyibpay.com/index.php/api/createBill', data=payload)
+        response.raise_for_status()
+        data = response.json()
+        bill_code = data[0]['BillCode']
+        return f"https://toyyibpay.com/{bill_code}"
+    except requests.RequestException as e:
+        logger.error(f"Bill creation failed: {e}")
+        return None
+
+def process_payment(client: Client, message: types.Message) -> None:
+    """Create a payment invoice and send the payment link to the user."""
+    user_id = message.from_user.id
+    
+    category_code = create_category()
+    if not category_code:
+        client.send_message(message.chat.id, "Failed to create payment category. Please try again later.")
+        return
+    
+    price_code = 500  # Example: RM5
+    item_name = "premium_access"
+    
+    payment_url = create_bill(category_code, user_id, price_code, item_name)
+    if payment_url:
+        client.send_message(message.chat.id, f"Please complete your payment by visiting: {payment_url}")
+    else:
+        client.send_message(message.chat.id, "Failed to create payment link. Please try again later.")
+
+def payment_callback(request: requests.Request) -> None:
+    """Handle payment callback and update user status."""
+    try:
+        data = request.json()
+        bill_code = data.get('billcode')
+        status = data.get('status')
+        user_id = int(data.get('order_id').split('_')[0])
         
-        if verify_payment(transaction_id):
-            update_user_data(user_id, 'version', 'premium_version')
-            client.send_message(message.chat.id, "Pembayaran anda telah disahkan. Langganan Premium anda telah diaktifkan.")
+        if status == '1':  # Success
+            user_data = load_user_data()
+            subscription_end = datetime.now() + timedelta(days=30)
+            user_data[user_id] = {"subscription_end": subscription_end.isoformat()}
+            save_user_data(user_data)
+            # Notify user
+            client.send_message(user_id, "Payment successful! You now have access to premium features.")
         else:
-            client.send_message(message.chat.id, "Pembayaran anda tidak dapat disahkan. Sila hubungi sokongan.")
+            client.send_message(user_id, "Payment failed. Please try again.")
     except Exception as e:
-        logger.error(f"Error handling payment success: {e}")
+        logger.error(f"Payment callback handling failed: {e}")
