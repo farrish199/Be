@@ -6,7 +6,7 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQ
 from chatgpt import generate_chatgpt_response, extract_info_from_text
 from callurl import app
 from payment import generate_random_string, create_category, create_bill, process_payment
-from database import save_user_data, 
+from database import save_user_data, save_auto_approve_group_id, get_auto_approve_group_id
 
 # Setup logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
