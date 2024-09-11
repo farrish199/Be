@@ -1,0 +1,83 @@
+{
+    "123456789": {
+        "convert": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 2
+        },
+        "broadcast": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 5
+        },
+        "auto_approve": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 3
+        },
+        "downloader": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 5
+        },
+        "chatgpt": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 5
+        }
+    },
+    "987654321": {
+        "convert": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 2
+        },
+        "broadcast": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 5
+        },
+        "auto_approve": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 3
+        },
+        "downloader": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 5
+        },
+        "chatgpt": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 5
+        }
+    },
+    "112233445": {
+        "convert": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 2
+        },
+        "broadcast": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 5
+        },
+        "auto_approve": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 3
+        },
+        "downloader": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 5
+        },
+        "chatgpt": {
+            "date": "2024-09-10",
+            "count": 0,
+            "limit": 5
+        }
+    }
+}
