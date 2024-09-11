@@ -26,6 +26,7 @@ def handle_start(client: Client, message: Message) -> None:
     try:
         user_id = message.from_user.id
         save_user_data(user_id)
+        initialize_user(user_id)  # Initialize limits for the new user
         
         # Text untuk mesej utama bot
         welcome_message = (
