@@ -1,22 +1,29 @@
 import json
 import os
 
-def save_user_data(user_id: int) -> None:
-    """Simpan user_id ke dalam user_data.json."""
-    try:
-        file_path = 'user_data.json'
-        data = {}
-        if os.path.exists(file_path):
-            with open(file_path, 'r') as f:
-                data = json.load(f)
+def is_user_allowed(user_id: int) -> bool:
+    """Check if the user is allowed to use the bot."""
+    return user_id == ADMIN_USER_ID or user_id in ALLOWED_USER_IDS
 
-        data[str(user_id)] = {"user_id": user_id}
+def is_user_paid(user_id: int) -> bool:
+    """Check if the user has paid to access the bot."""
+    user_data = load_user_data()
+    return (user_id in user_data and
+            user_data[user_id].get("subscription_end") and
+            datetime.fromisoformat(user_data[user_id]["subscription_end"]) > datetime.now())
 
-        with open(file_path, 'w') as f:
-            json.dump(data, f, indent=4)
-    except Exception as e:
-        logger.error(f"Ralat menyimpan data pengguna: {e}")
+def load_user_data() -> dict:
+    """Load user data from file."""
+    if os.path.exists('user_data.json'):
+        with open('user_data.json', 'r') as file:
+            return json.load(file)
+    return {}
 
+def save_user_data(user_data: dict) -> None:
+    """Save user data to file."""
+    with open('user_data.json', 'w') as file:
+        json.dump(user_data, file, indent=4)
+        
 def save_auto_approve_group_id(group_id: int) -> None:
     """Simpan ID group/channel untuk kelulusan automatik."""
     try:
