@@ -134,14 +134,11 @@ def handle_query(client: Client, query: CallbackQuery) -> None:
         elif data.endswith('_broadcast'):
             show_broadcast_submenu(chat_id)
         elif data.endswith('_auto_approve'):
-            # Handle Auto Approve option separately if needed
-            pass
+            show_auto_approve_submenu(chat_id)
         elif data.endswith('_downloader'):
             show_downloader_submenu(chat_id, data.split('_')[0])
         elif data.endswith('_chatgpt'):
             show_chatgpt_submenu(chat_id)
-        elif data == 'back_to_service':
-            show_service_submenu(chat_id)
         elif data == 'back_to_version':
             show_version_submenu(chat_id, data.split('_')[0])
         else:
