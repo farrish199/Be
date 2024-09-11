@@ -58,7 +58,7 @@ def create_bill(category_code: str, user_id: int, price_code: int, item_name: st
         'billPriceSetting': 1,
         'billPayorInfo': 1,
         'billAmount': bill_amount,
-        'billReturnUrl': 'https://yourdomain.com/payment_return',
+        'billReturnUrl': 'https://134.209.108.132/payment_return',
         'billCallbackUrl': 'https://134.209.108.132/payment_callback',
         'billExternalReferenceNo': order_id,
         'billTo': '',
