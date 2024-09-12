@@ -71,10 +71,10 @@ def initialize_user(user_id: int) -> None:
     if user_id_str not in limits:
         today = datetime.now().date().isoformat()
         limits[user_id_str] = {
-            "convert": {"date": today, "count": 0, "limit": 10},
-            "broadcast": {"date": today, "count": 0, "limit": 5},
-            "auto_approve": {"date": today, "count": 0, "limit": 1},
-            "downloader": {"date": today, "count": 0, "limit": 10},
+            "convert": {"date": today, "count": 0, "limit": 2},
+            "broadcast": {"date": today, "count": 0, "limit": 2},
+            "auto_approve": {"date": today, "count": 0, "limit": 2},
+            "downloader": {"date": today, "count": 0, "limit": 5},
             "chatgpt": {"date": today, "count": 0, "limit": 10}
         }
         save_limits(limits)
