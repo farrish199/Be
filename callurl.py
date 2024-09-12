@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # Tempat menyimpan data pengguna
 USER_DATA_FILE = 'userpaid_data.json'
 
-def load_user_data():
+def load_userpaid_data():
     """Muatkan data pengguna dari fail."""
     if os.path.exists(USER_DATA_FILE):
         with open(USER_DATA_FILE, 'r') as file:
@@ -23,7 +23,7 @@ def load_user_data():
                 return {}
     return {}
 
-def save_user_data(user_data):
+def save_userpaid_data(user_data):
     """Simpan data pengguna ke dalam fail."""
     try:
         with open(USER_DATA_FILE, 'w') as file:
@@ -47,10 +47,10 @@ def payment_callback():
         user_id = int(order_id.split('_')[0])
 
         if status == '1':  # Berjaya
-            user_data = load_user_data()
+            user_data = load_userpaid_data()
             subscription_end = datetime.now() + timedelta(days=30)
             user_data[user_id] = {"subscription_end": subscription_end.isoformat()}
-            save_user_data(user_data)
+            save_userpaid_data(user_data)
             # Beritahu pengguna (melalui bot Telegram, dsb.)
             return jsonify({'status': 'success', 'message': 'Pembayaran berjaya'}), 200
         else:
