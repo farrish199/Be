@@ -70,6 +70,12 @@ def handle_ask_command(client: Client, message: Message) -> None:
         logger.error(f"Ralat mengendalikan arahan /ask: {e}")
         client.send_message(message.chat.id, "Maaf, terdapat ralat semasa memproses permintaan anda.")
 
+def handle_message(client: Client, message: types.Message) -> None:
+    """Handle incoming messages and respond using ChatGPT."""
+    if message.text:
+        response = generate_chatgpt_response(message.text)
+        client.send_message(message.chat.id, response)
+
 @app.on_callback_query()
 def handle_query(client: Client, query: CallbackQuery) -> None:
     """Tangani klik pada butang dalam menu."""
