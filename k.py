@@ -4,7 +4,7 @@ import json
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Message
 from chatgpt import generate_chatgpt_response, extract_info_from_text
-from callurl import app, is_premium, load_premium_users
+from callurl import is_premium, load_premium_users
 from payment import generate_random_string, create_category, create_bill, process_payment
 from database import save_user_data, save_auto_approve_group_id, get_auto_approve_group_id
 from limit import set_daily_limit, load_limits, save_limits, initialize_user, check_daily_limit, update_daily_usage
