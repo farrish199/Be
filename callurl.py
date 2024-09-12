@@ -31,6 +31,43 @@ def save_userpaid_data(user_data):
     except IOError as e:
         logger.error(f"Ralat menulis ke fail: {e}")
 
+def load_premium_users() -> Dict[str, Dict[str, str]]:
+    """Muatkan data pengguna premium dari fail JSON."""
+    try:
+        with open('userpaid_data.json', 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError:
+        logger.error("Gagal memuatkan data pengguna premium. Format JSON tidak sah.")
+        return {}
+
+def is_premium(user_id: int) -> bool:
+    """Semak jika pengguna mempunyai langganan premium yang sah."""
+    premium_users = load_premium_users()
+    user_data = premium_users.get(str(user_id))
+    
+    if user_data:
+        subscription_end = datetime.fromisoformat(user_data['subscription_end'])
+        return datetime.now() < subscription_end
+    
+    return False
+    
+def set_premium_status(user_id: int, is_premium: bool) -> None:
+    """Tetapkan status premium pengguna berdasarkan pembayaran."""
+    premium_users = load_premium_users()
+    
+    if is_premium:
+        # Set langganan tamat tempoh 30 hari dari sekarang sebagai contoh
+        subscription_end = (datetime.now() + timedelta(days=30)).isoformat()
+        premium_users[str(user_id)] = {"subscription_end": subscription_end}
+    else:
+        if str(user_id) in premium_users:
+            del premium_users[str(user_id)]
+    
+    with open('userpaid_data.json', 'w') as file:
+        json.dump(premium_users, file, indent=4)
+
 @app.route('/payment_callback', methods=['POST'])
 def payment_callback():
     """Tangani callback pembayaran dan kemas kini status pengguna."""
