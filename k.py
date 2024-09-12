@@ -159,6 +159,11 @@ def handle_version_submenu(client: Client, callback_query: CallbackQuery) -> Non
     try:
         data = callback_query.data
         version_type, feature = data.split('_', 1)
+
+        # Jika pengguna memilih premium_version, semak jika mereka adalah pengguna premium
+        if version_type == 'premium_version' and not is_premium(callback_query.from_user.id):
+            client.send_message(callback_query.message.chat.id, "Anda perlu melanggan untuk mengakses ciri premium ini.")
+            return
         
         feature_function_map = {
             'convert': show_convert_submenu,
@@ -170,7 +175,7 @@ def handle_version_submenu(client: Client, callback_query: CallbackQuery) -> Non
         
         feature_function_map.get(feature, lambda *args: None)(client, callback_query.message.chat.id, version_type)
         
-        # Update usage for free version features
+        # Update penggunaan untuk versi percuma
         if version_type == 'free_version':
             if not check_daily_limit(callback_query.from_user.id, feature, version_type):
                 client.send_message(callback_query.message.chat.id, "Anda telah melebihi had harian untuk fungsi ini.")
@@ -178,6 +183,48 @@ def handle_version_submenu(client: Client, callback_query: CallbackQuery) -> Non
             update_daily_usage(callback_query.from_user.id, feature)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu versi: {e}")
+
+def set_premium_status(user_id: int, is_premium: bool) -> None:
+    """Tetapkan status premium pengguna berdasarkan pembayaran."""
+    premium_users = load_premium_users()
+    
+    if is_premium:
+        # Set langganan tamat tempoh 30 hari dari sekarang sebagai contoh
+        subscription_end = (datetime.now() + timedelta(days=30)).isoformat()
+        premium_users[str(user_id)] = {"subscription_end": subscription_end}
+    else:
+        if str(user_id) in premium_users:
+            del premium_users[str(user_id)]
+    
+    with open('userpaid_data.json', 'w') as file:
+        json.dump(premium_users, file, indent=4)
+
+import json
+
+def load_premium_users() -> Dict[str, Dict[str, str]]:
+    """Muatkan data pengguna premium dari fail JSON."""
+    try:
+        with open('userpaid_data.json', 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+    except json.JSONDecodeError:
+        logger.error("Gagal memuatkan data pengguna premium. Format JSON tidak sah.")
+        return {}
+
+from datetime import datetime
+
+def is_premium(user_id: int) -> bool:
+    """Semak jika pengguna mempunyai langganan premium yang sah."""
+    premium_users = load_premium_users()
+    user_data = premium_users.get(str(user_id))
+    
+    if user_data:
+        subscription_end = datetime.fromisoformat(user_data['subscription_end'])
+        return datetime.now() < subscription_end
+    
+    return False
+
 
 def show_downloader_submenu(client: Client, chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'Downloader'."""
