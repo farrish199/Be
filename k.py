@@ -4,7 +4,7 @@ import json
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Message
 from chatgpt import generate_chatgpt_response, extract_info_from_text
-from callurl import app
+from callurl import app, is_premium, load_premium_users
 from payment import generate_random_string, create_category, create_bill, process_payment
 from database import save_user_data, save_auto_approve_group_id, get_auto_approve_group_id
 from limit import set_daily_limit, load_limits, save_limits, initialize_user, check_daily_limit, update_daily_usage
@@ -183,48 +183,6 @@ def handle_version_submenu(client: Client, callback_query: CallbackQuery) -> Non
             update_daily_usage(callback_query.from_user.id, feature)
     except Exception as e:
         logger.error(f"Ralat memaparkan submenu versi: {e}")
-
-def set_premium_status(user_id: int, is_premium: bool) -> None:
-    """Tetapkan status premium pengguna berdasarkan pembayaran."""
-    premium_users = load_premium_users()
-    
-    if is_premium:
-        # Set langganan tamat tempoh 30 hari dari sekarang sebagai contoh
-        subscription_end = (datetime.now() + timedelta(days=30)).isoformat()
-        premium_users[str(user_id)] = {"subscription_end": subscription_end}
-    else:
-        if str(user_id) in premium_users:
-            del premium_users[str(user_id)]
-    
-    with open('userpaid_data.json', 'w') as file:
-        json.dump(premium_users, file, indent=4)
-
-import json
-
-def load_premium_users() -> Dict[str, Dict[str, str]]:
-    """Muatkan data pengguna premium dari fail JSON."""
-    try:
-        with open('userpaid_data.json', 'r') as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return {}
-    except json.JSONDecodeError:
-        logger.error("Gagal memuatkan data pengguna premium. Format JSON tidak sah.")
-        return {}
-
-from datetime import datetime
-
-def is_premium(user_id: int) -> bool:
-    """Semak jika pengguna mempunyai langganan premium yang sah."""
-    premium_users = load_premium_users()
-    user_data = premium_users.get(str(user_id))
-    
-    if user_data:
-        subscription_end = datetime.fromisoformat(user_data['subscription_end'])
-        return datetime.now() < subscription_end
-    
-    return False
-
 
 def show_downloader_submenu(client: Client, chat_id: int, version_type: str) -> None:
     """Tunjukkan pilihan submenu di bawah 'Downloader'."""
