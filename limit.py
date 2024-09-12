@@ -7,8 +7,8 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 
 LIMITS_FILE = "limits.json"
-DB_PATH = 'your_database_path.db'  # Gantikan dengan laluan sebenar kepada pangkalan data anda
-ADMIN_USER_ID = 123456789  # Gantikan dengan ID pengguna admin sebenar
+DB_PATH = 'your_database_path.db'
+ADMIN_USER_ID = os.getenv("ADMIN_USER_ID")
 
 # Konfigurasi logger
 logging.basicConfig(level=logging.INFO)
